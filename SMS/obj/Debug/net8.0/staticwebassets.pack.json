@@ -1,0 +1,45 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\SMS.bundle.scp.css",
+      "PackagePath": "staticwebassets\\SMS.bundle.scp.css"
+    },
+    {
+      "Id": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\wwwroot\\app.css",
+      "PackagePath": "staticwebassets\\app.css"
+    },
+    {
+      "Id": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\wwwroot\\bootstrap\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\wwwroot\\bootstrap\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\wwwroot\\favicon.png",
+      "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\wwwroot\\login-redirect.js",
+      "PackagePath": "staticwebassets\\login-redirect.js"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.SMS.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.SMS.props",
+      "PackagePath": "build\\SMS.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.SMS.props",
+      "PackagePath": "buildMultiTargeting\\SMS.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.SMS.props",
+      "PackagePath": "buildTransitive\\SMS.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

@@ -1,0 +1,63 @@
+@page "/students/create"
+@inject SMS.CimContext DB
+@using SMS.Models
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h4>Student</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Student" OnValidSubmit="AddStudent" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+            <div class="mb-3">
+                <label for="sid" class="form-label">SID:</label> 
+                <InputNumber id="sid" @bind-Value="Student.SID" class="form-control" /> 
+                <ValidationMessage For="() => Student.SID" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="name" class="form-label">Name:</label> 
+                <InputText id="name" @bind-Value="Student.Name" class="form-control" /> 
+                <ValidationMessage For="() => Student.Name" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="age" class="form-label">Age:</label> 
+                <InputNumber id="age" @bind-Value="Student.Age" class="form-control" /> 
+                <ValidationMessage For="() => Student.Age" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="major" class="form-label">Major:</label> 
+                <InputText id="major" @bind-Value="Student.Major" class="form-control" /> 
+                <ValidationMessage For="() => Student.Major" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label> 
+                <InputText id="email" @bind-Value="Student.Email" class="form-control" /> 
+                <ValidationMessage For="() => Student.Email" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/students">Back to List</a>
+</div>
+
+@code {
+
+    [SupplyParameterFromForm]
+    public Student Student { get; set; } = new();
+
+    // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
+    public async Task AddStudent()
+    {
+        DB.SMS_Students.Add(Student);
+        await DB.SaveChangesAsync();
+        NavigationManager.NavigateTo("/students");
+    }
+}

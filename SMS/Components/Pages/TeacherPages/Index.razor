@@ -1,0 +1,26 @@
+@page "/teachers"
+@using Microsoft.AspNetCore.Components.QuickGrid
+@inject SMS.CimContext DB
+@using SMS.Models
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="teachers/create">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="DB.SMS_Teachers">
+    <PropertyColumn Property="teacher => teacher.TID" />
+    <PropertyColumn Property="teacher => teacher.Name" />
+    <PropertyColumn Property="teacher => teacher.Age" />
+    <PropertyColumn Property="teacher => teacher.Major" />
+    <PropertyColumn Property="teacher => teacher.Email" />
+
+    <TemplateColumn Context="teacher">
+        <a href="@($"teachers/edit?id={teacher.Id}")">Edit</a> |
+        <a href="@($"teachers/details?id={teacher.Id}")">Details</a> |
+        <a href="@($"teachers/delete?id={teacher.Id}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>

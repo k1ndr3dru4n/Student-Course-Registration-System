@@ -1,0 +1,106 @@
+@page "/Students/edit"
+@inject SMS.CimContext DB
+@using SMS.Models
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h4>Student</h4>
+<hr />
+@if (Student is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Student" OnValidSubmit="UpdateStudent" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <input type="hidden" name="Student.Id" value="@Student.Id" />
+                <div class="mb-3">
+                    <label for="sid" class="form-label">SID:</label>
+                    <InputNumber id="sid" @bind-Value="Student.SID" class="form-control" />
+                    <ValidationMessage For="() => Student.SID" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name:</label>
+                    <InputText id="name" @bind-Value="Student.Name" class="form-control" />
+                    <ValidationMessage For="() => Student.Name" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="age" class="form-label">Age:</label>
+                    <InputNumber id="age" @bind-Value="Student.Age" class="form-control" />
+                    <ValidationMessage For="() => Student.Age" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="major" class="form-label">Major:</label>
+                    <InputText id="major" @bind-Value="Student.Major" class="form-control" />
+                    <ValidationMessage For="() => Student.Major" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email:</label>
+                    <InputText id="email" @bind-Value="Student.Email" class="form-control" />
+                    <ValidationMessage For="() => Student.Email" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/students">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    public Student? Student { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Student ??= await DB.SMS_Students.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (Student is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    public async Task UpdateStudent()
+    {
+        DB.Attach(Student!).State = EntityState.Modified;
+
+        try
+        {
+            await DB.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!StudentExists(Student!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/students");
+    }
+
+    bool StudentExists(int id)
+    {
+        return DB.SMS_Students.Any(e => e.Id == id);
+    }
+}
