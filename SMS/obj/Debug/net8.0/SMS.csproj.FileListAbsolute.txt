@@ -256,3 +256,4 @@ C:\Users\ZH202508001\Desktop\Student Management System\SMS\obj\Debug\net8.0\SMS.
 C:\Users\ZH202508001\Desktop\Student Management System\SMS\obj\Debug\net8.0\ref\SMS.dll
 C:\Users\ZH202508001\Desktop\Student Management System\SMS\bin\Debug\net8.0\Microsoft.AspNetCore.Components.WebAssembly.dll
 C:\Users\ZH202508001\Desktop\Student Management System\SMS\bin\Debug\net8.0\Microsoft.JSInterop.WebAssembly.dll
+C:\Users\ZH202508001\Desktop\Student Management System\SMS\bin\Debug\net8.0\BCrypt.Net-Next.dll

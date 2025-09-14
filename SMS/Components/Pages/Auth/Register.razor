@@ -1,0 +1,242 @@
+@page "/register"
+@using SMS.Models
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager NavigationManager
+@inject IDbContextFactory<CimContext> DbContextFactory
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<PageTitle>注册</PageTitle>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">注册</h3>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(_errorMessage))
+                    {
+                        <div class="alert alert-danger">
+                            @_errorMessage
+                        </div>
+                    }
+                    
+                    <form @onsubmit="HandleSubmit" @onsubmit:preventDefault="true">
+                        <!-- 移除了 AntiforgeryToken，因为我们使用 Blazor 客户端处理 -->
+                        <div class="form-group mb-3">
+                            <label for="username">用户名</label>
+                            <input type="text" id="username" name="username" class="form-control" 
+                                   autocomplete="username"
+                                   @bind="_registerModel.Username" />
+                            @if (!string.IsNullOrEmpty(GetValidationError(nameof(_registerModel.Username))))
+                            {
+                                <div class="text-danger">@GetValidationError(nameof(_registerModel.Username))</div>
+                            }
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="email">电子邮箱</label>
+                            <input type="email" id="email" name="email" class="form-control" 
+                                   autocomplete="email"
+                                   @bind="_registerModel.Email" />
+                            @if (!string.IsNullOrEmpty(GetValidationError(nameof(_registerModel.Email))))
+                            {
+                                <div class="text-danger">@GetValidationError(nameof(_registerModel.Email))</div>
+                            }
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="password">密码</label>
+                            <input type="password" id="password" name="password" class="form-control" 
+                                   autocomplete="new-password"
+                                   @bind="_registerModel.Password" />
+                            @if (!string.IsNullOrEmpty(GetValidationError(nameof(_registerModel.Password))))
+                            {
+                                <div class="text-danger">@GetValidationError(nameof(_registerModel.Password))</div>
+                            }
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="confirmPassword">确认密码</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" 
+                                   autocomplete="new-password"
+                                   @bind="_registerModel.ConfirmPassword" />
+                            @if (!string.IsNullOrEmpty(GetValidationError(nameof(_registerModel.ConfirmPassword))))
+                            {
+                                <div class="text-danger">@GetValidationError(nameof(_registerModel.ConfirmPassword))</div>
+                            }
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mb-3" disabled="@_isSubmitting">
+                            @if (_isSubmitting)
+                            {
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <span class="ms-2">注册中...</span>
+                            }
+                            else
+                            {
+                                <span>注册</span>
+                            }
+                        </button>
+                        
+                        <div class="text-center">
+                            <p>已有账号？ <a href="/login">立即登录</a></p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private RegisterModel _registerModel = new();
+    private string _errorMessage = string.Empty;
+    private bool _isSubmitting;
+    private Dictionary<string, string> _validationErrors = new();
+
+    private string GetValidationError(string propertyName)
+    {
+        return _validationErrors.GetValueOrDefault(propertyName, string.Empty);
+    }
+
+    private bool ValidateModel()
+    {
+        _validationErrors.Clear();
+        
+        // 验证用户名
+        if (string.IsNullOrWhiteSpace(_registerModel.Username))
+        {
+            _validationErrors[nameof(_registerModel.Username)] = "请输入用户名";
+        }
+        else if (_registerModel.Username.Length < 3 || _registerModel.Username.Length > 50)
+        {
+            _validationErrors[nameof(_registerModel.Username)] = "用户名长度必须在3-50个字符之间";
+        }
+
+        // 验证邮箱
+        if (string.IsNullOrWhiteSpace(_registerModel.Email))
+        {
+            _validationErrors[nameof(_registerModel.Email)] = "请输入邮箱";
+        }
+        else if (!IsValidEmail(_registerModel.Email))
+        {
+            _validationErrors[nameof(_registerModel.Email)] = "请输入有效的邮箱地址";
+        }
+
+        // 验证密码
+        if (string.IsNullOrWhiteSpace(_registerModel.Password))
+        {
+            _validationErrors[nameof(_registerModel.Password)] = "请输入密码";
+        }
+        else if (_registerModel.Password.Length < 6 || _registerModel.Password.Length > 100)
+        {
+            _validationErrors[nameof(_registerModel.Password)] = "密码长度必须在6-100个字符之间";
+        }
+
+        // 验证确认密码
+        if (string.IsNullOrWhiteSpace(_registerModel.ConfirmPassword))
+        {
+            _validationErrors[nameof(_registerModel.ConfirmPassword)] = "请确认密码";
+        }
+        else if (_registerModel.Password != _registerModel.ConfirmPassword)
+        {
+            _validationErrors[nameof(_registerModel.ConfirmPassword)] = "两次输入的密码不一致";
+        }
+
+        return _validationErrors.Count == 0;
+    }
+
+    private bool IsValidEmail(string email)
+    {
+        try
+        {
+            var addr = new System.Net.Mail.MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (_isSubmitting) 
+        {
+            return;
+        }
+
+        try 
+        {
+            _isSubmitting = true;
+            StateHasChanged();
+
+            // 手动验证
+            if (!ValidateModel())
+            {
+                _errorMessage = "验证失败，请检查输入";
+                _isSubmitting = false;
+                StateHasChanged();
+                return;
+            }
+
+            using var context = await DbContextFactory.CreateDbContextAsync();
+            
+            // 检查用户名是否已存在
+            var existingUsername = await context.Users.AnyAsync(u => u.Username == _registerModel.Username);
+            if (existingUsername)
+            {
+                _errorMessage = "用户名已被使用";
+                _isSubmitting = false;
+                StateHasChanged();
+                return;
+            }
+
+            // 检查邮箱是否已存在
+            var existingEmail = await context.Users.AnyAsync(u => u.Email == _registerModel.Email);
+            if (existingEmail)
+            {
+                _errorMessage = "邮箱已被使用";
+                _isSubmitting = false;
+                StateHasChanged();
+                return;
+            }
+
+            // 创建新用户
+            var user = new User
+            {
+                Username = _registerModel.Username,
+                Email = _registerModel.Email,
+                Password = BCrypt.Net.BCrypt.HashPassword(_registerModel.Password),
+                CreatedAt = DateTime.UtcNow, // 使用 UTC 时间避免时区问题
+                IsActive = true
+            };
+
+            try
+            {
+                context.Users.Add(user);
+                await context.SaveChangesAsync();
+                
+                // 注册成功后重定向到登录页面
+                NavigationManager.NavigateTo("/login", true);
+            }
+            catch (DbUpdateException dbEx)
+            {
+                _errorMessage = "注册失败，请稍后重试";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"系统错误: {ex.Message}";
+        }
+        finally
+        {
+            _isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+}

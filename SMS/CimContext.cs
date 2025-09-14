@@ -7,5 +7,7 @@ namespace SMS
     {
         public CimContext(DbContextOptions<CimContext> options) : base(options) { }
         public DbSet<Student> SMS_Students { get; set; }
-        public DbSet<Teacher> SMS_Teachers { get; set; }    }
+        public DbSet<Teacher> SMS_Teachers { get; set; }
+        public DbSet<User> Users { get; set; }
+    }
 }
