@@ -1,31 +1,32 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">SMS</a>
-    </div>
-</div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+﻿<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/home" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
+    <nav class="flex-column" style="height: calc(100vh - 60px); display: flex; align-items: center; justify-content: flex-start; padding-top: 25px;">
+        <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 3px solid #2196f3; border-radius: 25px; padding: 12px 12px; box-shadow: 0 6px 16px rgba(0,0,0,0.25); width: 80px; display: flex; align-items: center; justify-content: center; position: relative;">
+            
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center;">
+                <NavLink class="nav-link" href="/home" Match="NavLinkMatch.All" title="Home" style="text-decoration: none; display: flex; flex-direction: column; align-items: center;">
+                    <div style="width: 45px; height: 45px; background: linear-gradient(135deg, #4caf50, #81c784); border: 2px solid #2e7d32; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 8px rgba(76,175,80,0.4); transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+                        <span style="font-size: 18px; color: white;">🏠</span>
+                    </div>
+                    <div style="text-align: center; color: #333; font-size: 9px; margin-top: 3px; font-weight: 500;">首页</div>
+                </NavLink>
+                
+                <NavLink class="nav-link" href="/directory" Match="NavLinkMatch.All" title="目录" style="text-decoration: none; display: flex; flex-direction: column; align-items: center;">
+                    <div style="width: 45px; height: 45px; background: linear-gradient(135deg, #ff9800, #ffb74d); border: 2px solid #e65100; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 8px rgba(255,152,0,0.4); transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+                        <span style="font-size: 18px; color: white;">📁</span>
+                    </div>
+                    <div style="text-align: center; color: #333; font-size: 9px; margin-top: 3px; font-weight: 500;">目录</div>
+                </NavLink>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/students" Match="NavLinkMatch.All">
-                <span class="oi oi-people" aria-hidden="true"></span> 学生管理
-            </NavLink>
+                <NavLink class="nav-link" href="/favorites" Match="NavLinkMatch.All" title="收藏夹" style="text-decoration: none; display: flex; flex-direction: column; align-items: center;">
+                    <div style="width: 45px; height: 45px; background: linear-gradient(135deg, #9c27b0, #ba68c8); border: 2px solid #6a1b9a; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 8px rgba(156,39,176,0.4); transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+                        <span style="font-size: 18px; color: white;">⭐</span>
+                    </div>
+                    <div style="text-align: center; color: #333; font-size: 9px; margin-top: 3px; font-weight: 500;">收藏夹</div>
+                </NavLink>
+            </div>
         </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/teachers" Match="NavLinkMatch.All">
-                <span class="oi oi-people" aria-hidden="true"></span> 教师管理
-            </NavLink>
-        </div>
-
     </nav>
 </div>
 

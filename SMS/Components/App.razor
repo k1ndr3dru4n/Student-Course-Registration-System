@@ -1,5 +1,4 @@
-﻿@namespace SMS.Components
-@using Microsoft.AspNetCore.Components.Authorization
+﻿@using Microsoft.AspNetCore.Components.Authorization
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
     <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="app.css" />
     <link rel="stylesheet" href="SMS.styles.css" />
     <HeadOutlet @rendermode="@InteractiveServer" />
@@ -15,9 +15,8 @@
 </head>
 
 <body>
-    <CascadingAuthenticationState>
-        <Routes />
-    </CascadingAuthenticationState>
+    <Routes />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="_framework/blazor.web.js"></script>
 </body>
 

@@ -49,3 +49,108 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+/* 强制侧边栏白色背景和尺寸 */
+.sidebar {
+    background-color: white !important;
+    background-image: none !important;
+    background: white !important;
+    border-right: 1px solid #e9ecef !important;
+    width: 8rem !important;
+    overflow: hidden !important;
+}
+
+/* 统一顶部栏样式 - 蓝色渐变 */
+.unified-top-row {
+    background: linear-gradient(135deg, #4a90e2 0%, #357abd 50%, #2e6da4 100%) !important;
+    border-bottom: none !important;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15) !important;
+    height: 60px !important;
+    min-height: 60px !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 1000 !important;
+}
+
+/* 顶部栏文字颜色 */
+.unified-top-row .navbar-brand,
+.brand-section .navbar-brand {
+    color: #ffffff !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+    font-weight: 700 !important;
+    letter-spacing: 2px !important;
+}
+
+/* 内容区域适应顶部栏高度 */
+.content-wrapper {
+    margin-top: 60px !important;
+}
+
+/* 页面基础样式 */
+body {
+    margin: 0;
+    padding: 0;
+}
+
+/* 强制圆角边框容器样式 */
+.nav-icons-container {
+    background: rgba(135, 206, 250, 0.3) !important;
+    border: 2px solid #4169E1 !important;
+    border-radius: 20px !important;
+    padding: 1rem 0.5rem !important;
+    margin: 2rem 0.5rem !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    display: block !important;
+}
+
+/* 强制圆形图标容器样式 */
+.nav-icon-circle {
+    width: 4rem !important;
+    height: 4rem !important;
+    background: #e3f2fd !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.3s ease !important;
+    border: 2px solid #90caf9 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    margin: 0 auto !important;
+}
+
+.nav-icon-circle:hover {
+    background: #cce7ff !important;
+    border-color: #99d3ff !important;
+    transform: scale(1.1) !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* 强制导航项样式 */
+.nav-item {
+    font-size: 0.9rem !important;
+    padding: 0.5rem 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+}
+
+/* 强制图标样式 */
+.bi {
+    display: inline-block !important;
+    position: relative !important;
+    width: 2rem !important;
+    height: 2rem !important;
+    font-size: 1.6rem !important;
+    color: #333333 !important;
+}
+
+/* 导航容器位置调整 */
+.nav-scrollable nav {
+    padding-top: 20px !important;
+}
+
+.nav-scrollable nav > div {
+    margin-top: -5px !important;
+    position: relative !important;
+}

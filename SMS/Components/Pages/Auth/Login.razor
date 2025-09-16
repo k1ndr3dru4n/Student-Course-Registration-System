@@ -1,4 +1,5 @@
 @page "/login"
+@layout SMS.Components.Layout.AuthLayout
 @using SMS.Models
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.Forms
@@ -105,6 +106,9 @@
                 // 更新最后登录时间
                 user.LastLogin = DateTime.UtcNow;
                 await context_db.SaveChangesAsync();
+                
+                // 保存用户信息到本地存储
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "currentUser", user.Username);
                 
                 // 跳转到首页
                 NavigationManager.NavigateTo("/home", forceLoad: true);

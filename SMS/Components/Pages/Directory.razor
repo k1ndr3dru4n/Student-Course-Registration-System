@@ -1,0 +1,127 @@
+@page "/directory"
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
+@rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
+
+<PageTitle>目录</PageTitle>
+
+<h1 style="color: #333; margin-bottom: 30px; text-align: center; font-weight: 600;">功能目录</h1>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card" style="position: relative;">
+                <div class="card-body text-center" style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                    <div class="favorite-star" id="star-students" @onclick="@((e) => ToggleFavorite("students"))" @onclick:preventDefault="true" @onclick:stopPropagation="true"
+                         style="font-size: 32px; cursor: pointer; color: @GetStarColor("students"); transition: color 0.3s ease;"
+                         title="收藏">
+                        @GetStarIcon("students")
+                    </div>
+                    <a href="/students" style="text-decoration: none; color: inherit;">
+                        <h5 style="margin: 0;">👥 学生管理</h5>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card" style="position: relative;">
+                <div class="card-body text-center" style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                    <div class="favorite-star" id="star-teachers" @onclick="@((e) => ToggleFavorite("teachers"))" @onclick:preventDefault="true" @onclick:stopPropagation="true"
+                         style="font-size: 32px; cursor: pointer; color: @GetStarColor("teachers"); transition: color 0.3s ease;"
+                         title="收藏">
+                        @GetStarIcon("teachers")
+                    </div>
+                    <a href="/teachers" style="text-decoration: none; color: inherit;">
+                        <h5 style="margin: 0;">👨‍🏫 教师管理</h5>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<string> favorites = new List<string>();
+    private bool isInitialized = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !isInitialized)
+        {
+            await LoadFavorites();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadFavorites()
+    {
+        if (isInitialized) return;
+        
+        try
+        {
+            var favoritesJson = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "favorites");
+            
+            if (string.IsNullOrEmpty(favoritesJson) || favoritesJson == "null" || favoritesJson == "undefined")
+            {
+                favorites = new List<string>();
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "favorites", "[]");
+            }
+            else
+            {
+                try
+                {
+                    favorites = System.Text.Json.JsonSerializer.Deserialize<List<string>>(favoritesJson) ?? new List<string>();
+                }
+                catch
+                {
+                    favorites = new List<string>();
+                    await JSRuntime.InvokeVoidAsync("localStorage.setItem", "favorites", "[]");
+                }
+            }
+        }
+        catch
+        {
+            favorites = new List<string>();
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "favorites", "[]");
+        }
+        
+        isInitialized = true;
+    }
+
+    private async Task ToggleFavorite(string item)
+    {
+        if (favorites.Contains(item))
+        {
+            favorites.Remove(item);
+        }
+        else
+        {
+            favorites.Add(item);
+        }
+
+        var favoritesJson = System.Text.Json.JsonSerializer.Serialize(favorites);
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", "favorites", favoritesJson);
+        
+        // 触发存储事件以通知收藏夹页面更新
+        await JSRuntime.InvokeVoidAsync("eval", $@"
+            window.dispatchEvent(new StorageEvent('storage', {{
+                key: 'favorites',
+                newValue: '{favoritesJson}'
+            }}));
+        ");
+        
+        StateHasChanged();
+    }
+
+    private string GetStarIcon(string item)
+    {
+        return favorites.Contains(item) ? "★" : "☆";
+    }
+
+    private string GetStarColor(string item)
+    {
+        return favorites.Contains(item) ? "#ffd700" : "#ddd";
+    }
+}

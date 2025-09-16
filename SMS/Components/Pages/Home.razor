@@ -1,9 +1,63 @@
 ﻿@page "/home"
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
 <PageTitle>Home</PageTitle>
 
-<h1>欢迎使用SMS平台</h1>
+@if (isLoading)
+{
+    <p><em>正在加载...</em></p>
+}
+else if (isAuthenticated)
+{
+    <h1>欢迎使用SMS平台</h1>
 
-Welcome to the student management system (SMS) platform. 
+    <p>欢迎回来，<strong>@currentUser</strong>！</p>
 
-This platform is designed to help you manage student information efficiently and effectively.
+    <p>Welcome to the student management system (SMS) platform.</p>
+
+    <p>This platform is designed to help you manage student information efficiently and effectively.</p>
+
+}
+
+@code {
+    private bool isLoading = true;
+    private bool isAuthenticated = false;
+    private string currentUser = string.Empty;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await CheckAuthentication();
+            StateHasChanged();
+        }
+    }
+
+    private async Task CheckAuthentication()
+    {
+        try
+        {
+            currentUser = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "currentUser") ?? string.Empty;
+            
+            if (string.IsNullOrEmpty(currentUser))
+            {
+                // 未登录，重定向到登录页面
+                NavigationManager.NavigateTo("/login", forceLoad: true);
+                return;
+            }
+            
+            isAuthenticated = true;
+        }
+        catch (Exception)
+        {
+            // 发生错误时重定向到登录页面
+            NavigationManager.NavigateTo("/login", forceLoad: true);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

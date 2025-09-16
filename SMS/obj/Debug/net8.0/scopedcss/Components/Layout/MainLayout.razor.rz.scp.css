@@ -2,6 +2,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
 }
 
 main[b-t4v5m2jsyu] {
@@ -9,68 +10,52 @@ main[b-t4v5m2jsyu] {
 }
 
 .sidebar[b-t4v5m2jsyu] {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    background-color: #ffffff !important;
+    background-image: none !important;
+    background: #ffffff !important;
+    border-right: 1px solid #e9ecef;
+    box-shadow: none;
 }
 
-.top-row[b-t4v5m2jsyu] {
-    background-color: #f7f7f7;
-    border-bottom: 1px solid #d6d5d5;
-    justify-content: flex-end;
-    height: 3.5rem;
+.unified-top-row[b-t4v5m2jsyu] {
+    background: linear-gradient(135deg, #4a90e2 0%, #357abd 50%, #2e6da4 100%) !important;
+    border-bottom: none !important;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15) !important;
+    height: 60px !important;
+    min-height: 60px !important;
+}
+
+.content-wrapper[b-t4v5m2jsyu] {
+    margin-top: 60px;
     display: flex;
-    align-items: center;
+    flex: 1;
+    min-height: calc(100vh - 60px);
 }
-
-    .top-row[b-t4v5m2jsyu]  a, .top-row[b-t4v5m2jsyu]  .btn-link {
-        white-space: nowrap;
-        margin-left: 1.5rem;
-        text-decoration: none;
-    }
-
-    .top-row[b-t4v5m2jsyu]  a:hover, .top-row[b-t4v5m2jsyu]  .btn-link:hover {
-        text-decoration: underline;
-    }
-
-    .top-row[b-t4v5m2jsyu]  a:first-child {
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
 
 @media (max-width: 640.98px) {
-    .top-row[b-t4v5m2jsyu] {
-        justify-content: space-between;
+    .unified-top-row[b-t4v5m2jsyu] {
+        padding: 0 1rem !important;
     }
-
-    .top-row[b-t4v5m2jsyu]  a, .top-row[b-t4v5m2jsyu]  .btn-link {
-        margin-left: 0;
+    
+    .brand-section .navbar-brand[b-t4v5m2jsyu] {
+        font-size: 1.2rem !important;
     }
 }
 
 @media (min-width: 641px) {
-    .page[b-t4v5m2jsyu] {
+    .content-wrapper[b-t4v5m2jsyu] {
         flex-direction: row;
     }
 
     .sidebar[b-t4v5m2jsyu] {
-        width: 250px;
-        height: 100vh;
+        width: 8rem;
+        height: calc(100vh - 60px);
         position: sticky;
-        top: 0;
+        top: 60px;
     }
 
-    .top-row[b-t4v5m2jsyu] {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
-
-    .top-row.auth[b-t4v5m2jsyu]  a:first-child {
+    .content-wrapper main[b-t4v5m2jsyu] {
         flex: 1;
-        text-align: right;
-        width: 0;
-    }
-
-    .top-row[b-t4v5m2jsyu], article[b-t4v5m2jsyu] {
         padding-left: 2rem !important;
         padding-right: 1.5rem !important;
     }

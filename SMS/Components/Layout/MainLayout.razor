@@ -2,19 +2,31 @@
 @inherits LayoutComponentBase
 
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
+    <!-- 统一的顶部栏 -->
+    <div class="unified-top-row d-flex justify-content-between align-items-center px-4" style="background: linear-gradient(135deg, #4a90e2 0%, #357abd 50%, #2e6da4 100%); border-bottom: none; box-shadow: 0 3px 10px rgba(0,0,0,0.15); height: 60px; min-height: 60px; position: fixed; top: 0; left: 0; right: 0; z-index: 1000;">
+        <!-- 左侧SMS品牌 -->
+        <div class="brand-section">
+            <a class="navbar-brand" href="" style="font-size: 1.4rem; font-weight: 700; color: #ffffff; text-decoration: none; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">SMS</a>
+        </div>
+        
+        <!-- 右侧用户菜单 -->
+        <div class="user-section">
+            <UserMenu />
+        </div>
     </div>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+    <!-- 下方内容区域 -->
+    <div class="content-wrapper" style="margin-top: 60px; display: flex;">
+        <div class="sidebar" style="background-color: white !important; background-image: none !important; background: white !important;">
+            <NavMenu />
         </div>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
+        <main style="flex: 1;">
+            <article class="content px-4">
+                @Body
+            </article>
+        </main>
+    </div>
 </div>
 
 <div id="blazor-error-ui">

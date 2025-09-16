@@ -1,4 +1,5 @@
 @page "/register"
+@layout SMS.Components.Layout.AuthLayout
 @using SMS.Models
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.Forms
@@ -224,7 +225,7 @@
                 // 注册成功后重定向到登录页面
                 NavigationManager.NavigateTo("/login", true);
             }
-            catch (DbUpdateException dbEx)
+            catch (DbUpdateException)
             {
                 _errorMessage = "注册失败，请稍后重试";
             }

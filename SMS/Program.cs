@@ -1,17 +1,12 @@
 using Microsoft.EntityFrameworkCore;
-using SMS.Components;
 using SMS;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Components.Server.Circuits;
+using SMS.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-
-builder.Services.AddControllers();
 
 // 配置HTTPS
 builder.Services.AddHttpsRedirection(options =>
@@ -24,17 +19,6 @@ builder.Services.AddDbContextFactory<CimContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("CimContext")));
 
 builder.Services.AddQuickGridEntityFrameworkAdapter();
-
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        options.LoginPath = "/login";
-        options.LogoutPath = "/logout";
-    });
-
-builder.Services.AddAuthorization();
-builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
@@ -50,13 +34,9 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
-app.UseAuthentication();
-app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-
-app.MapControllers();
 
 app.Run();
