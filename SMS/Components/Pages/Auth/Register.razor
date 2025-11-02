@@ -94,6 +94,7 @@
 </div>
 
 @code {
+    private string currentUser = string.Empty;
     private RegisterModel _registerModel = new();
     private string _errorMessage = string.Empty;
     private bool _isSubmitting;
@@ -186,7 +187,8 @@
             }
 
             using var context = await DbContextFactory.CreateDbContextAsync();
-            
+            currentUser = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "currentUser") ?? string.Empty;
+
             // 检查用户名是否已存在
             var existingUsername = await context.Users.AnyAsync(u => u.Username == _registerModel.Username);
             if (existingUsername)
@@ -213,8 +215,10 @@
                 Username = _registerModel.Username,
                 Email = _registerModel.Email,
                 Password = BCrypt.Net.BCrypt.HashPassword(_registerModel.Password),
-                CreatedAt = DateTime.UtcNow, // 使用 UTC 时间避免时区问题
-                IsActive = true
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true,
+                CreateUser = string.IsNullOrEmpty(currentUser) ? _registerModel.Username : currentUser,
+                UpdateUser = string.IsNullOrEmpty(currentUser) ? _registerModel.Username : currentUser
             };
 
             try
@@ -225,9 +229,13 @@
                 // 注册成功后重定向到登录页面
                 NavigationManager.NavigateTo("/login", true);
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
-                _errorMessage = "注册失败，请稍后重试";
+                _errorMessage = $"注册失败: {ex.Message}";
+                if (ex.InnerException != null)
+                {
+                    _errorMessage += $" 详细信息: {ex.InnerException.Message}";
+                }
             }
         }
         catch (Exception ex)

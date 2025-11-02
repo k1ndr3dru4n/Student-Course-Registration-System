@@ -20,8 +20,12 @@ public class User
     [StringLength(100)]
     public string? Email { get; set; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? LastLogin { get; set; }
     public bool IsActive { get; set; } = true;
+    public DateTime CreateDate { get; set; }
+    public DateTime UpdateDate { get; set; }
+    public string? CreateUser { get; set; }
+    public string? UpdateUser { get; set; }
 }
 

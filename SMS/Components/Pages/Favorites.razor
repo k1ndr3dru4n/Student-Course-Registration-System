@@ -53,7 +53,8 @@
     private readonly Dictionary<string, FavoriteItem> favoriteItems = new Dictionary<string, FavoriteItem>
     {
         ["students"] = new FavoriteItem { Icon = "👥", Title = "学生管理", Url = "/students" },
-        ["teachers"] = new FavoriteItem { Icon = "👨‍🏫", Title = "教师管理", Url = "/teachers" }
+        ["teachers"] = new FavoriteItem { Icon = "👨‍🏫", Title = "教师管理", Url = "/teachers" },
+        ["courses"] = new FavoriteItem { Icon = "📚", Title = "课程管理", Url = "/courses" }
     };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

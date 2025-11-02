@@ -1,0 +1,127 @@
+@page "/Courses/edit"
+@inject SMS.CimContext DB
+@using SMS.Models
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+@rendermode InteractiveServer
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h4>Course</h4>
+<hr />
+@if (Course is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Course" OnValidSubmit="UpdateCourse" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <input type="hidden" name="Course.Id" value="@Course.Id" />
+                <div class="mb-3">
+                    <label for="cid" class="form-label">CID:</label>
+                    <InputNumber id="cid" @bind-Value="Course.CID" class="form-control" />
+                    <ValidationMessage For="() => Course.CID" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name:</label>
+                    <InputText id="name" @bind-Value="Course.Name" class="form-control" />
+                    <ValidationMessage For="() => Course.Name" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="credits" class="form-label">Credits:</label>
+                    <InputNumber id="credits" @bind-Value="Course.Credits" class="form-control" />
+                    <ValidationMessage For="() => Course.Credits" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description:</label>
+                    <InputText id="description" @bind-Value="Course.Description" class="form-control" />
+                    <ValidationMessage For="() => Course.Description" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="status" class="form-label">Status:</label>
+                    <InputCheckbox id="status" @bind-Value="Course.Status" class="form-check-input" />
+                    <ValidationMessage For="() => Course.Status" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/courses">Back to List</a>
+</div>
+
+@code {
+    [Inject]
+    public IJSRuntime JSRuntime { get; set; } = default!;
+    private string currentUser = string.Empty;
+
+    [SupplyParameterFromQuery]
+    public int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    public Course? Course { get; set; }
+
+    private bool isFirstRender = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Course ??= await DB.SMS_Courses.FirstOrDefaultAsync(m => m.Id == Id);
+        if (Course is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && isFirstRender)
+        {
+            currentUser = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "currentUser") ?? string.Empty;
+            isFirstRender = false;
+            StateHasChanged();
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    public async Task UpdateCourse()
+    {
+        // 获取当前用户名并设置更新用户
+        if (!string.IsNullOrEmpty(currentUser))
+        {
+            Course!.UpdateUser = currentUser;
+        }
+        DB.Attach(Course!).State = EntityState.Modified;
+
+        try
+        {
+            await DB.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!CourseExists(Course!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/courses");
+    }
+
+    bool CourseExists(int id)
+    {
+        return DB.SMS_Courses.Any(e => e.Id == id);
+    }
+}

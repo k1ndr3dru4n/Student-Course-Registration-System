@@ -3,6 +3,7 @@
 @using SMS.Models
 @inject NavigationManager NavigationManager
 @using Microsoft.EntityFrameworkCore
+@rendermode InteractiveServer
 
 <PageTitle>Delete</PageTitle>
 
@@ -45,6 +46,9 @@
 </div>
 
 @code {
+    [Inject]
+    public IJSRuntime JSRuntime { get; set; } = default!;
+    private string currentUser = string.Empty;
     Teacher? teacher;
 
     [SupplyParameterFromQuery]
@@ -62,6 +66,11 @@
 
     public async Task DeleteTeacher()
     {
+        currentUser = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "currentUser") ?? string.Empty;
+        if (!string.IsNullOrEmpty(currentUser))
+        {
+            teacher!.UpdateUser = currentUser;
+        }
         DB.SMS_Teachers.Remove(teacher!);
         await DB.SaveChangesAsync();
         NavigationManager.NavigateTo("/teachers");

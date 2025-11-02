@@ -2,6 +2,7 @@
 @inject SMS.CimContext DB
 @using SMS.Models
 @inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
 <PageTitle>Create</PageTitle>
 
@@ -50,12 +51,22 @@
 
 @code {
 
+    [Inject]
+    public IJSRuntime JSRuntime { get; set; } = default!;
+    private string currentUser = string.Empty;
+
     [SupplyParameterFromForm]
     public Student Student { get; set; } = new();
 
     // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
     public async Task AddStudent()
     {
+        currentUser = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "currentUser") ?? string.Empty;
+        if (!string.IsNullOrEmpty(currentUser))
+        {
+            Student.CreateUser = currentUser;
+            Student.UpdateUser = currentUser;
+        }
         DB.SMS_Students.Add(Student);
         await DB.SaveChangesAsync();
         NavigationManager.NavigateTo("/students");

@@ -3,6 +3,7 @@
 @using SMS.Models
 @inject NavigationManager NavigationManager
 @using Microsoft.EntityFrameworkCore
+@rendermode InteractiveServer
 
 <PageTitle>Edit</PageTitle>
 
@@ -58,6 +59,10 @@ else
 </div>
 
 @code {
+    [Inject]
+    public IJSRuntime JSRuntime { get; set; } = default!;
+    private string currentUser = string.Empty;
+
     [SupplyParameterFromQuery]
     public int Id { get; set; }
 
@@ -67,7 +72,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         Teacher ??= await DB.SMS_Teachers.FirstOrDefaultAsync(m => m.Id == Id);
-
+        currentUser = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "currentUser") ?? string.Empty;
         if (Teacher is null)
         {
             NavigationManager.NavigateTo("notfound");
@@ -78,6 +83,11 @@ else
     // For more details, see https://aka.ms/RazorPagesCRUD.
     public async Task UpdateTeacher()
     {
+        // 获取当前用户名（假设页面有 currentUser 变量）
+        if (!string.IsNullOrEmpty(currentUser))
+        {
+            Teacher!.UpdateUser = currentUser;
+        }
         DB.Attach(Teacher!).State = EntityState.Modified;
 
         try

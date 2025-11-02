@@ -6,36 +6,122 @@
 
 <PageTitle>目录</PageTitle>
 
+<style>
+    .management-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 15px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .management-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .card-title-link {
+        text-decoration: none !important;
+        color: #495057 !important;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+    
+    .card-title-link:hover {
+        color: #007bff !important;
+    }
+    
+    .management-icon {
+        font-size: 2rem;
+        margin-right: 10px;
+    }
+    
+    .favorite-star {
+        font-size: 32px !important;
+        cursor: pointer;
+        transition: color 0.3s ease, transform 0.2s ease;
+        user-select: none;
+        margin-right: 10px;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    
+    .favorite-star:hover {
+        transform: scale(1.1);
+    }
+    
+    .card-content {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+    }
+    
+    .card-text-content {
+        display: flex;
+        align-items: center;
+    }
+</style>
+
 <h1 style="color: #333; margin-bottom: 30px; text-align: center; font-weight: 600;">功能目录</h1>
 
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-md-6 mb-4">
-            <div class="card" style="position: relative;">
-                <div class="card-body text-center" style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-                    <div class="favorite-star" id="star-students" @onclick="@((e) => ToggleFavorite("students"))" @onclick:preventDefault="true" @onclick:stopPropagation="true"
-                         style="font-size: 32px; cursor: pointer; color: @GetStarColor("students"); transition: color 0.3s ease;"
-                         title="收藏">
-                        @GetStarIcon("students")
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card management-card">
+                <div class="card-body" style="padding: 30px 20px;">
+                    <div class="card-content">
+                        <div class="favorite-star" id="star-students" @onclick="@((e) => ToggleFavorite("students"))" @onclick:preventDefault="true" @onclick:stopPropagation="true"
+                             style="color: @GetStarColor("students");"
+                             title="收藏">
+                            @GetStarIcon("students")
+                        </div>
+                        <a href="/students" class="card-title-link" style="flex: 1;">
+                            <div class="card-text-content">
+                                <div class="management-icon">👥</div>
+                                <h5 style="margin: 0; font-size: 1.25rem;">学生管理</h5>
+                            </div>
+                        </a>
                     </div>
-                    <a href="/students" style="text-decoration: none; color: inherit;">
-                        <h5 style="margin: 0;">👥 学生管理</h5>
-                    </a>
                 </div>
             </div>
         </div>
         
-        <div class="col-md-6 mb-4">
-            <div class="card" style="position: relative;">
-                <div class="card-body text-center" style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-                    <div class="favorite-star" id="star-teachers" @onclick="@((e) => ToggleFavorite("teachers"))" @onclick:preventDefault="true" @onclick:stopPropagation="true"
-                         style="font-size: 32px; cursor: pointer; color: @GetStarColor("teachers"); transition: color 0.3s ease;"
-                         title="收藏">
-                        @GetStarIcon("teachers")
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card management-card">
+                <div class="card-body" style="padding: 30px 20px;">
+                    <div class="card-content">
+                        <div class="favorite-star" id="star-teachers" @onclick="@((e) => ToggleFavorite("teachers"))" @onclick:preventDefault="true" @onclick:stopPropagation="true"
+                             style="color: @GetStarColor("teachers");"
+                             title="收藏">
+                            @GetStarIcon("teachers")
+                        </div>
+                        <a href="/teachers" class="card-title-link" style="flex: 1;">
+                            <div class="card-text-content">
+                                <div class="management-icon">👨‍🏫</div>
+                                <h5 style="margin: 0; font-size: 1.25rem;">教师管理</h5>
+                            </div>
+                        </a>
                     </div>
-                    <a href="/teachers" style="text-decoration: none; color: inherit;">
-                        <h5 style="margin: 0;">👨‍🏫 教师管理</h5>
-                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card management-card">
+                <div class="card-body" style="padding: 30px 20px;">
+                    <div class="card-content">
+                        <div class="favorite-star" id="star-courses" @onclick="@((e) => ToggleFavorite("courses"))" @onclick:preventDefault="true" @onclick:stopPropagation="true"
+                             style="color: @GetStarColor("courses");"
+                             title="收藏">
+                            @GetStarIcon("courses")
+                        </div>
+                        <a href="/courses" class="card-title-link" style="flex: 1;">
+                            <div class="card-text-content">
+                                <div class="management-icon">📚</div>
+                                <h5 style="margin: 0; font-size: 1.25rem;">课程管理</h5>
+                            </div>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

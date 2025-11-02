@@ -16,4 +16,8 @@ public class Student
     public string? Major { get; set; }
     
     public string? Email { get; set; }
+    public DateTime CreateDate { get; set; }
+    public DateTime UpdateDate { get; set; }
+    public string? CreateUser { get; set; }
+    public string? UpdateUser { get; set; }
 }

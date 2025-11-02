@@ -103,8 +103,9 @@
 
             if (user != null && BCrypt.Net.BCrypt.Verify(loginModel.Password, user.Password))
             {
-                // 更新最后登录时间
+                // 更新最后登录时间和审计字段 (使用UTC时间)
                 user.LastLogin = DateTime.UtcNow;
+                user.UpdateUser = user.Username; // 设置更新用户为当前登录用户
                 await context_db.SaveChangesAsync();
                 
                 // 保存用户信息到本地存储
@@ -121,6 +122,10 @@
         catch (Exception ex)
         {
             errorMessage = $"登录失败: {ex.Message}";
+            if (ex.InnerException != null)
+            {
+                errorMessage += $" 详细信息: {ex.InnerException.Message}";
+            }
         }
         
         StateHasChanged();

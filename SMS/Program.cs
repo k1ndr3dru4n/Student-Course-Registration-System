@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SMS;
 using SMS.Components;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
