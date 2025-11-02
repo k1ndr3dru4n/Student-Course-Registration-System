@@ -20,44 +20,48 @@ else
     <AntDesign.Row>
         <AntDesign.Col Span="12">
             <AntDesign.Card Title="编辑教师信息">
-                <EditForm method="post" Model="Teacher" OnValidSubmit="UpdateTeacher" FormName="edit" Enhance>
+                <EditForm Model="@Teacher" OnValidSubmit="UpdateTeacher">
                     <DataAnnotationsValidator />
                     <ValidationSummary />
                     <input type="hidden" name="Teacher.Id" value="@Teacher.Id" />
-                    
-                    <AntDesign.Form Model="@Teacher" Layout="@AntDesign.FormLayout.Vertical">
-                        <ChildContent Context="formContext">
-                            <AntDesign.FormItem Label="工号(TID):">
-                                <Microsoft.AspNetCore.Components.Forms.InputNumber @bind-Value="Teacher.TID" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
-                                <ValidationMessage For="() => Teacher.TID" style="color: #ff4d4f;" />
-                            </AntDesign.FormItem>
-                            
-                            <AntDesign.FormItem Label="姓名:">
-                                <InputText @bind-Value="Teacher.Name" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
-                                <ValidationMessage For="() => Teacher.Name" style="color: #ff4d4f;" />
-                            </AntDesign.FormItem>
-                            
-                            <AntDesign.FormItem Label="年龄:">
-                                <Microsoft.AspNetCore.Components.Forms.InputNumber @bind-Value="Teacher.Age" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
-                                <ValidationMessage For="() => Teacher.Age" style="color: #ff4d4f;" />
-                            </AntDesign.FormItem>
-                            
-                            <AntDesign.FormItem Label="专业:">
-                                <InputText @bind-Value="Teacher.Major" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
-                                <ValidationMessage For="() => Teacher.Major" style="color: #ff4d4f;" />
-                            </AntDesign.FormItem>
-                            
-                            <AntDesign.FormItem Label="邮箱:">
-                                <InputText @bind-Value="Teacher.Email" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
-                                <ValidationMessage For="() => Teacher.Email" style="color: #ff4d4f;" />
-                            </AntDesign.FormItem>
-                            
-                            <AntDesign.FormItem>
-                                <AntDesign.Button Type="@AntDesign.ButtonType.Primary" HtmlType="submit">保存</AntDesign.Button>
-                                <AntDesign.Button style="margin-left: 8px;" @onclick="@(() => NavigationManager.NavigateTo("/teachers"))">取消</AntDesign.Button>
-                            </AntDesign.FormItem>
-                        </ChildContent>
-                    </AntDesign.Form>
+                    <div style="margin-bottom: 16px;">
+                        <label>工号(TID):</label>
+                        <Microsoft.AspNetCore.Components.Forms.InputNumber @bind-Value="Teacher.TID" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
+                        <ValidationMessage For="() => Teacher.TID" style="color: #ff4d4f;" />
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label>姓名:</label>
+                        <InputText @bind-Value="Teacher.Name" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
+                        <ValidationMessage For="() => Teacher.Name" style="color: #ff4d4f;" />
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label>年龄:</label>
+                        <Microsoft.AspNetCore.Components.Forms.InputNumber @bind-Value="Teacher.Age" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
+                        <ValidationMessage For="() => Teacher.Age" style="color: #ff4d4f;" />
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label>专业:</label>
+                        <InputText @bind-Value="Teacher.Major" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
+                        <ValidationMessage For="() => Teacher.Major" style="color: #ff4d4f;" />
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label>邮箱:</label>
+                        <InputText @bind-Value="Teacher.Email" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
+                        <ValidationMessage For="() => Teacher.Email" style="color: #ff4d4f;" />
+                    </div>
+                    <div style="margin-bottom: 16px; display: flex; gap: 8px;">
+                        <AntDesign.Button Type="@AntDesign.ButtonType.Primary" HtmlType="submit" Loading="@isSubmitting">
+                            @if (isSubmitting)
+                            {
+                                <span>保存中...</span>
+                            }
+                            else
+                            {
+                                <span>保存</span>
+                            }
+                        </AntDesign.Button>
+                        <AntDesign.Button style="margin-left: 8px;" @onclick="@(() => NavigationManager.NavigateTo("/teachers"))">取消</AntDesign.Button>
+                    </div>
                 </EditForm>
             </AntDesign.Card>
         </AntDesign.Col>
@@ -73,6 +77,7 @@ else
     public IJSRuntime JSRuntime { get; set; } = default!;
     private string currentUser = string.Empty;
     private bool hasRendered = false;
+    private bool isSubmitting = false;
 
     [SupplyParameterFromQuery]
     public int Id { get; set; }
@@ -111,30 +116,41 @@ else
     // For more details, see https://aka.ms/RazorPagesCRUD.
     public async Task UpdateTeacher()
     {
-        // 获取当前用户名（假设页面有 currentUser 变量）
-        if (!string.IsNullOrEmpty(currentUser))
-        {
-            Teacher!.UpdateUser = currentUser;
-        }
-        DB.Attach(Teacher!).State = EntityState.Modified;
-
+        isSubmitting = true;
+        StateHasChanged();
+        
         try
         {
-            await DB.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!TeacherExists(Teacher!.Id))
+            // 获取当前用户名（假设页面有 currentUser 变量）
+            if (!string.IsNullOrEmpty(currentUser))
             {
-                NavigationManager.NavigateTo("notfound");
+                Teacher!.UpdateUser = currentUser;
             }
-            else
-            {
-                throw;
-            }
-        }
+            DB.Attach(Teacher!).State = EntityState.Modified;
 
-        NavigationManager.NavigateTo("/teachers");
+            try
+            {
+                await DB.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!TeacherExists(Teacher!.Id))
+                {
+                    NavigationManager.NavigateTo("notfound");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            NavigationManager.NavigateTo("/teachers");
+        }
+        finally
+        {
+            isSubmitting = false;
+            StateHasChanged();
+        }
     }
 
     bool TeacherExists(int id)

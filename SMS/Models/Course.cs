@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 namespace SMS.Models;
 
 public enum CourseStatus
@@ -38,11 +39,13 @@ public class Course
     /// 授课教师
     /// </summary>
     [ForeignKey("TeacherId")]
+    [JsonIgnore]
     public virtual Teacher? Teacher { get; set; }
 
     /// <summary>
     /// 该课程的所有选课记录
     /// </summary>
+    [JsonIgnore]
     public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
 }
 

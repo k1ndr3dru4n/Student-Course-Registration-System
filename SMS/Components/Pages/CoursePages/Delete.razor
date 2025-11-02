@@ -11,53 +11,43 @@
 
 <h3>Are you sure you want to delete this?</h3>
 <div>
-    <h4>Course</h4>
-    <hr />
+    <h4>课程</h4>
+    <AntDesign.Divider />
     @if (course is null)
     {
         <p><em>Loading...</em></p>
     }
     else {
-        <dl class="row">
-            <dt class="col-sm-2">CID</dt>
-            <dd class="col-sm-10">@course.CID</dd>
-        </dl>
-        <dl class="row">
-            <dt class="col-sm-2">Name</dt>
-            <dd class="col-sm-10">@course.Name</dd>
-        </dl>
-        <dl class="row">
-            <dt class="col-sm-2">Credits</dt>
-            <dd class="col-sm-10">@course.Credits</dd>
-        </dl>
-        <dl class="row">
-            <dt class="col-sm-2">Description</dt>
-            <dd class="col-sm-10">@course.Description</dd>
-        </dl>
-        <dl class="row">
-            <dt class="col-sm-2">课程状态</dt>
-            <dd class="col-sm-10">@course.CourseStatus</dd>
-        </dl>
-        <dl class="row">
-            <dt class="col-sm-2">CreateDate</dt>
-            <dd class="col-sm-10">@course.CreateDate</dd>
-        </dl>
-        <dl class="row">
-            <dt class="col-sm-2">UpdateDate</dt>
-            <dd class="col-sm-10">@course.UpdateDate</dd>
-        </dl>
-        <dl class="row">
-            <dt class="col-sm-2">CreateUser</dt>
-            <dd class="col-sm-10">@course.CreateUser</dd>
-        </dl>
-        <dl class="row">
-            <dt class="col-sm-2">UpdateUser</dt>
-            <dd class="col-sm-10">@course.UpdateUser</dd>
-        </dl>
-        <EditForm method="post" Model="course" OnValidSubmit="DeleteCourse" FormName="delete" Enhance>
-            <button type="submit" class="btn btn-danger" disabled="@(course is null)">Delete</button> |
-            <a href="/courses">Back to List</a>
-        </EditForm>
+        <AntDesign.Card Title="确认删除课程" style="margin-bottom: 16px;">
+            <AntDesign.Alert Type="@AntDesign.AlertType.Warning" 
+                           Message="您确定要删除以下课程信息吗？此操作无法撤销。" 
+                           ShowIcon="true" 
+                           style="margin-bottom: 16px;" />
+            
+            <AntDesign.Descriptions Bordered="true" Column="1">
+                <AntDesign.DescriptionsItem Title="课程编号(CID)">@course.CID</AntDesign.DescriptionsItem>
+                <AntDesign.DescriptionsItem Title="课程名称">@course.Name</AntDesign.DescriptionsItem>
+                <AntDesign.DescriptionsItem Title="学分">@course.Credits</AntDesign.DescriptionsItem>
+                <AntDesign.DescriptionsItem Title="课程描述">@course.Description</AntDesign.DescriptionsItem>
+                <AntDesign.DescriptionsItem Title="课程状态">@course.CourseStatus</AntDesign.DescriptionsItem>
+            </AntDesign.Descriptions>
+            
+            <EditForm method="post" Model="course" OnValidSubmit="DeleteCourse" FormName="delete" Enhance>
+                <div style="margin-top: 16px;">
+                    <AntDesign.Button Type="@AntDesign.ButtonType.Primary" Danger="true" HtmlType="submit" Disabled="@(course is null)" Loading="@isDeleting">
+                        @if (isDeleting)
+                        {
+                            <span>删除中...</span>
+                        }
+                        else
+                        {
+                            <span>删除</span>
+                        }
+                    </AntDesign.Button>
+                    <AntDesign.Button style="margin-left: 8px;" @onclick="@(() => NavigationManager.NavigateTo("/courses"))">取消</AntDesign.Button>
+                </div>
+            </EditForm>
+        </AntDesign.Card>
     }
 </div>
 
@@ -65,7 +55,7 @@
     [Inject]
     public IJSRuntime JSRuntime { get; set; } = default!;
     private string currentUser = string.Empty;
-
+    private bool isDeleting = false;
     Course? course;
 
     [SupplyParameterFromQuery]
@@ -83,13 +73,24 @@
 
     public async Task DeleteCourse()
     {
-        currentUser = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "currentUser") ?? string.Empty;
-        if (!string.IsNullOrEmpty(currentUser))
+        isDeleting = true;
+        StateHasChanged();
+        
+        try
         {
-            course!.UpdateUser = currentUser;
+            currentUser = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "currentUser") ?? string.Empty;
+            if (!string.IsNullOrEmpty(currentUser))
+            {
+                course!.UpdateUser = currentUser;
+            }
+            DB.SMS_Courses.Remove(course!);
+            await DB.SaveChangesAsync();
+            NavigationManager.NavigateTo("/courses");
         }
-        DB.SMS_Courses.Remove(course!);
-        await DB.SaveChangesAsync();
-        NavigationManager.NavigateTo("/courses");
+        finally
+        {
+            isDeleting = false;
+            StateHasChanged();
+        }
     }
 }

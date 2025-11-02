@@ -26,26 +26,28 @@
     }
     else
     {
-        <AntDesign.Row Gutter="24">
+        <AntDesign.Row Gutter="24" style="justify-content: center;">
             @foreach (var item in favorites)
             {
                 @if (favoriteItems.ContainsKey(item))
                 {
                     var fav = favoriteItems[item];
-                    <AntDesign.Col Span="12" style="margin-bottom: 16px;">
+                    <AntDesign.Col Xs="24" Sm="12" Md="8" style="margin-bottom: 24px;">
                         <a href="@fav.Url" style="text-decoration: none;">
-                            <AntDesign.Card Hoverable="true">
-                                <div style="display: flex; align-items: center; justify-content: center; gap: 15px; padding: 16px;">
-                                    <div @onclick="@((e) => RemoveFavorite(item))" @onclick:preventDefault="true" @onclick:stopPropagation="true"
-                                         style="font-size: 32px; cursor: pointer; color: #ffd700; transition: color 0.3s ease;"
-                                         title="取消收藏">
-                                        ★
+                            <AntDesign.Card Hoverable="true" style="margin-bottom: 24px;">
+                                <Body>
+                                    <div style="display: flex; align-items: center;">
+                                        <div @onclick="@((e) => RemoveFavorite(item))" @onclick:preventDefault="true" @onclick:stopPropagation="true"
+                                             style="font-size: 32px; cursor: pointer; color: #ffd700; transition: color 0.3s ease; margin-right: 16px;"
+                                             title="取消收藏">
+                                            ★
+                                        </div>
+                                        <div style="flex: 1; display: flex; align-items: center;">
+                                            <Icon Type="@fav.Icon" Theme="@IconThemeType.Outline" style="font-size: 2rem; margin-right: 12px; color: #1890ff;" />
+                                            <h4 style="margin: 0;">@fav.Title</h4>
+                                        </div>
                                     </div>
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <Icon Type="@fav.Icon" Theme="@IconThemeType.Outline" style="font-size: 1.5rem; color: #1890ff;" />
-                                        <h5 style="margin: 0; color: #333;">@fav.Title</h5>
-                                    </div>
-                                </div>
+                                </Body>
                             </AntDesign.Card>
                         </a>
                     </AntDesign.Col>

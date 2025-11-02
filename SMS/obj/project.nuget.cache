@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "ySSHmAhInKs=",
+  "dgSpecHash": "n36CnKPkJgw=",
   "success": true,
-  "projectFilePath": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\SMS.csproj",
+  "projectFilePath": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.5\\SMS\\SMS.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\ZH202508001\\.nuget\\packages\\antdesign\\1.4.3\\antdesign.1.4.3.nupkg.sha512",
     "C:\\Users\\ZH202508001\\.nuget\\packages\\azure.core\\1.25.0\\azure.core.1.25.0.nupkg.sha512",

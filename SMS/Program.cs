@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SMS;
 using SMS.Components;
 using Microsoft.AspNetCore.Identity;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,13 @@ builder.Services.AddRazorComponents()
 
 // 添加Ant Design服务
 builder.Services.AddAntDesign();
+
+// 配置JSON序列化选项
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.SerializerOptions.WriteIndented = true;
+});
 
 // 配置HTTPS
 builder.Services.AddHttpsRedirection(options =>
@@ -40,7 +48,7 @@ app.UseStaticFiles();
 
 app.UseAntiforgery();
 
-app.MapRazorComponents<SMS.Components.App>()
+app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();

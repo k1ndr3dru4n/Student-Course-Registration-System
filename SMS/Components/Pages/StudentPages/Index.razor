@@ -13,7 +13,7 @@
 <div style="margin: 20px;">
     <Breadcrumb Style="margin-bottom: 20px;">
         <BreadcrumbItem>
-            <a href="/" style="color: #1890ff; text-decoration: none;">目录</a>
+            <a href="/directory" style="color: #1890ff; text-decoration: none;">目录</a>
         </BreadcrumbItem>
         <BreadcrumbItem>学生管理</BreadcrumbItem>
     </Breadcrumb>
@@ -22,7 +22,7 @@
     <Extra>
         <Space>
             <SpaceItem>
-                <Search Placeholder="搜索学生姓名或专业" WrapperStyle="width: 250px;" ClassicSearchIcon 
+                <Search Placeholder="搜索任意内容" WrapperStyle="width: 250px;" ClassicSearchIcon 
                         @bind-Value="searchText" OnSearch="OnSearch" />
             </SpaceItem>
             <SpaceItem>
@@ -36,12 +36,62 @@
         </Space>
     </Extra>
     <Body>
-        <QuickGrid Class="table" Items="FilteredStudents">
-            <Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn Property="student => student.SID" Title="学号" />
-            <Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn Property="student => student.Name" Title="姓名" />
-            <Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn Property="student => student.Age" Title="年龄" />
-            <Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn Property="student => student.Major" Title="专业" />
-            <Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn Property="student => student.Email" Title="邮箱" />
+        <QuickGrid Class="table quickgrid-table" Items="FilteredStudents">
+            <Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn Property="student => student.SID" Title="学号">
+                <HeaderTemplate>
+                    <div style="display: flex; align-items: center;">
+                        <span>学号</span>
+                        <span class="quickgrid-sort-icons" style="margin-left: 8px; flex-direction: column;">
+                            <span class="quickgrid-sort-arrow @(sortField=="SID"&&sortAsc?"active":"inactive")" style="cursor:pointer;" @onclick='() => SortBy("SID", true)'>▲</span>
+                            <span class="quickgrid-sort-arrow @(sortField=="SID"&&!sortAsc?"active":"inactive")" style="cursor:pointer;" @onclick='() => SortBy("SID", false)'>▼</span>
+                        </span>
+                    </div>
+                </HeaderTemplate>
+            </Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn>
+            <Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn Property="student => student.Name" Title="姓名">
+                <HeaderTemplate>
+                    <div style="display: flex; align-items: center;">
+                        <span>姓名</span>
+                        <span class="quickgrid-sort-icons" style="margin-left: 8px; flex-direction: column;">
+                            <span class="quickgrid-sort-arrow @(sortField=="Name"&&sortAsc?"active":"inactive")" style="cursor:pointer;" @onclick='() => SortBy("Name", true)'>▲</span>
+                            <span class="quickgrid-sort-arrow @(sortField=="Name"&&!sortAsc?"active":"inactive")" style="cursor:pointer;" @onclick='() => SortBy("Name", false)'>▼</span>
+                        </span>
+                    </div>
+                </HeaderTemplate>
+            </Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn>
+            <Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn Property="student => student.Age" Title="年龄">
+                <HeaderTemplate>
+                    <div style="display: flex; align-items: center;">
+                        <span>年龄</span>
+                        <span class="quickgrid-sort-icons" style="margin-left: 8px; flex-direction: column;">
+                            <span class="quickgrid-sort-arrow @(sortField=="Age"&&sortAsc?"active":"inactive")" style="cursor:pointer;" @onclick='() => SortBy("Age", true)'>▲</span>
+                            <span class="quickgrid-sort-arrow @(sortField=="Age"&&!sortAsc?"active":"inactive")" style="cursor:pointer;" @onclick='() => SortBy("Age", false)'>▼</span>
+                        </span>
+                    </div>
+                </HeaderTemplate>
+            </Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn>
+            <Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn Property="student => student.Major" Title="专业">
+                <HeaderTemplate>
+                    <div style="display: flex; align-items: center;">
+                        <span>专业</span>
+                        <span class="quickgrid-sort-icons" style="margin-left: 8px; flex-direction: column;">
+                            <span class="quickgrid-sort-arrow @(sortField=="Major"&&sortAsc?"active":"inactive")" style="cursor:pointer;" @onclick='() => SortBy("Major", true)'>▲</span>
+                            <span class="quickgrid-sort-arrow @(sortField=="Major"&&!sortAsc?"active":"inactive")" style="cursor:pointer;" @onclick='() => SortBy("Major", false)'>▼</span>
+                        </span>
+                    </div>
+                </HeaderTemplate>
+            </Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn>
+            <Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn Property="student => student.Email" Title="邮箱">
+                <HeaderTemplate>
+                    <div style="display: flex; align-items: center;">
+                        <span>邮箱</span>
+                        <span class="quickgrid-sort-icons" style="margin-left: 8px; flex-direction: column;">
+                            <span class="quickgrid-sort-arrow @(sortField=="Email"&&sortAsc?"active":"inactive")" style="cursor:pointer;" @onclick='() => SortBy("Email", true)'>▲</span>
+                            <span class="quickgrid-sort-arrow @(sortField=="Email"&&!sortAsc?"active":"inactive")" style="cursor:pointer;" @onclick='() => SortBy("Email", false)'>▼</span>
+                        </span>
+                    </div>
+                </HeaderTemplate>
+            </Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn>
 
             <TemplateColumn Context="student" Title="操作">
                 <Space>
@@ -54,7 +104,7 @@
                         </a>
                     </SpaceItem>
                     <SpaceItem>
-                        <a href="@($"students/details?id={student.Id}")" style="text-decoration: none;">
+                        <a href="@($"students/details/{student.Id}")" style="text-decoration: none;">
                             <Button Type="@ButtonType.Link">
                                 <Icon Type="eye" Theme="@IconThemeType.Outline" />
                                 详情
@@ -80,6 +130,32 @@
     private string searchText = string.Empty;
     private List<Student> students = new List<Student>();
     private List<Student> filteredStudents = new List<Student>();
+    private string sortField = "SID";
+    private bool sortAsc = true;
+    private void SortBy(string field, bool asc)
+    {
+        sortField = field;
+        sortAsc = asc;
+        switch (field)
+        {
+            case "SID":
+                filteredStudents = asc ? filteredStudents.OrderBy(s => s.SID).ToList() : filteredStudents.OrderByDescending(s => s.SID).ToList();
+                break;
+            case "Name":
+                filteredStudents = asc ? filteredStudents.OrderBy(s => s.Name).ToList() : filteredStudents.OrderByDescending(s => s.Name).ToList();
+                break;
+            case "Age":
+                filteredStudents = asc ? filteredStudents.OrderBy(s => s.Age).ToList() : filteredStudents.OrderByDescending(s => s.Age).ToList();
+                break;
+            case "Major":
+                filteredStudents = asc ? filteredStudents.OrderBy(s => s.Major).ToList() : filteredStudents.OrderByDescending(s => s.Major).ToList();
+                break;
+            case "Email":
+                filteredStudents = asc ? filteredStudents.OrderBy(s => s.Email).ToList() : filteredStudents.OrderByDescending(s => s.Email).ToList();
+                break;
+        }
+        StateHasChanged();
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -122,10 +198,15 @@
         else
         {
             filteredStudents = students.Where(s => 
-                (s.Name != null && s.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)) || 
-                (s.Major != null && s.Major.Contains(searchText, StringComparison.OrdinalIgnoreCase)) ||
                 s.SID.ToString().Contains(searchText) ||
-                (s.Email != null && s.Email.Contains(searchText, StringComparison.OrdinalIgnoreCase))).ToList();
+                (s.Name != null && s.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)) || 
+                s.Age.ToString().Contains(searchText) ||
+                (s.Major != null && s.Major.Contains(searchText, StringComparison.OrdinalIgnoreCase)) ||
+                (s.Email != null && s.Email.Contains(searchText, StringComparison.OrdinalIgnoreCase)) ||
+                (s.CreateUser != null && s.CreateUser.Contains(searchText, StringComparison.OrdinalIgnoreCase)) ||
+                (s.UpdateUser != null && s.UpdateUser.Contains(searchText, StringComparison.OrdinalIgnoreCase)) ||
+                s.CreateDate.ToString().Contains(searchText) ||
+                s.UpdateDate.ToString().Contains(searchText)).ToList();
         }
         StateHasChanged();
     }

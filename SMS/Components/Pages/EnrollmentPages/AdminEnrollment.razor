@@ -3,6 +3,7 @@
 @using Microsoft.JSInterop
 @using SMS.Models
 @using AntDesign
+@using System.Linq
 @inject SMS.CimContext DB
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
@@ -15,18 +16,18 @@
     <nav style="margin-bottom: 16px; padding: 8px 0;">
         <ol style="list-style: none; padding: 0; margin: 0; display: flex; align-items: center; color: #666; font-size: 14px;">
             <li>
-                <a href="/" style="color: #1890ff; text-decoration: none;">首页</a>
+                <a href="/directory" style="color: #1890ff; text-decoration: none;">目录</a>
             </li>
             <li style="margin: 0 8px; color: #8c8c8c;">/</li>
             <li>
-                <a href="/enrollment-management" style="color: #1890ff; text-decoration: none;">课程管理</a>
+                <a href="/enrollment-management" style="color: #1890ff; text-decoration: none;">选课管理</a>
             </li>
             <li style="margin: 0 8px; color: #8c8c8c;">/</li>
             <li style="color: #8c8c8c;">管理员课程管理</li>
         </ol>
     </nav>
     
-    <h1><Icon Type="crown" style="color: #faad14;" /> 管理员课程管理</h1>
+    <h1><Icon Type="contacts" style="color: #1890ff;" /> 管理员课程管理</h1>
     <p style="color: #666; margin-bottom: 24px;">管理课程状态，审批学生和教师的选课申请</p>
 
     <!-- 标签页导航 -->
@@ -48,7 +49,6 @@
     @if (activeTab == "course-status")
     {
         <div class="tab-content">
-            <h3><Icon Type="book" style="margin-right: 8px;" /> 课程状态管理</h3>
             
             @if (courses == null || !courses.Any())
             {
@@ -59,16 +59,56 @@
                 <table style="width: 100%; border-collapse: collapse; margin-top: 16px; border: 1px solid #ddd;">
                     <thead style="background: #f5f5f5;">
                         <tr>
-                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">课程名称</th>
-                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">课程编号</th>
-                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">学分</th>
-                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">授课教师</th>
-                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">课程状态</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">
+                                <div style="display: flex; align-items: center;">
+                                    <span>课程名称</span>
+                                    <span style="margin-left: 8px; flex-direction: column;">
+                                        <span style="cursor: pointer; color: @(courseStatusSortField=="Name"&&courseStatusSortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourseStatus("Name", true)'>▲</span>
+                                        <span style="cursor: pointer; color: @(courseStatusSortField=="Name"&&!courseStatusSortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourseStatus("Name", false)'>▼</span>
+                                    </span>
+                                </div>
+                            </th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center;">
+                                    <span>课程编号</span>
+                                    <span style="margin-left: 8px; flex-direction: column;">
+                                        <span style="cursor: pointer; color: @(courseStatusSortField=="CID"&&courseStatusSortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourseStatus("CID", true)'>▲</span>
+                                        <span style="cursor: pointer; color: @(courseStatusSortField=="CID"&&!courseStatusSortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourseStatus("CID", false)'>▼</span>
+                                    </span>
+                                </div>
+                            </th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center;">
+                                    <span>学分</span>
+                                    <span style="margin-left: 8px; flex-direction: column;">
+                                        <span style="cursor: pointer; color: @(courseStatusSortField=="Credits"&&courseStatusSortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourseStatus("Credits", true)'>▲</span>
+                                        <span style="cursor: pointer; color: @(courseStatusSortField=="Credits"&&!courseStatusSortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourseStatus("Credits", false)'>▼</span>
+                                    </span>
+                                </div>
+                            </th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center;">
+                                    <span>授课教师</span>
+                                    <span style="margin-left: 8px; flex-direction: column;">
+                                        <span style="cursor: pointer; color: @(courseStatusSortField=="Teacher"&&courseStatusSortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourseStatus("Teacher", true)'>▲</span>
+                                        <span style="cursor: pointer; color: @(courseStatusSortField=="Teacher"&&!courseStatusSortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourseStatus("Teacher", false)'>▼</span>
+                                    </span>
+                                </div>
+                            </th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center;">
+                                    <span>课程状态</span>
+                                    <span style="margin-left: 8px; flex-direction: column;">
+                                        <span style="cursor: pointer; color: @(courseStatusSortField=="CourseStatus"&&courseStatusSortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourseStatus("CourseStatus", true)'>▲</span>
+                                        <span style="cursor: pointer; color: @(courseStatusSortField=="CourseStatus"&&!courseStatusSortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourseStatus("CourseStatus", false)'>▼</span>
+                                    </span>
+                                </div>
+                            </th>
                             <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">操作</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var course in courses.Take(10))
+                        @foreach (var course in GetSortedCourseStatusData().Take(10))
                         {
                             <tr>
                                 <td style="padding: 12px; border: 1px solid #ddd;">@course.Name</td>
@@ -118,7 +158,6 @@
     @if (activeTab == "student-approval")
     {
         <div class="tab-content">
-            <h3><Icon Type="user" style="margin-right: 8px;" /> 学生选课申请审批</h3>
             
             @if (enrollments == null || !enrollments.Any())
             {
@@ -129,17 +168,65 @@
                 <table style="width: 100%; border-collapse: collapse; margin-top: 16px; border: 1px solid #ddd;">
                     <thead style="background: #f5f5f5;">
                         <tr>
-                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">学生姓名</th>
-                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">学号</th>
-                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">课程名称</th>
-                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">课程编号</th>
-                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">申请状态</th>
-                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">成绩</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">
+                                <div style="display: flex; align-items: center;">
+                                    <span>学生姓名</span>
+                                    <span style="margin-left: 8px; flex-direction: column;">
+                                        <span style="cursor: pointer; color: @(studentApprovalSortField=="StudentName"&&studentApprovalSortAsc?"#1890ff":"#ccc");" @onclick='() => SortStudentApproval("StudentName", true)'>▲</span>
+                                        <span style="cursor: pointer; color: @(studentApprovalSortField=="StudentName"&&!studentApprovalSortAsc?"#1890ff":"#ccc");" @onclick='() => SortStudentApproval("StudentName", false)'>▼</span>
+                                    </span>
+                                </div>
+                            </th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center;">
+                                    <span>学号</span>
+                                    <span style="margin-left: 8px; flex-direction: column;">
+                                        <span style="cursor: pointer; color: @(studentApprovalSortField=="StudentSID"&&studentApprovalSortAsc?"#1890ff":"#ccc");" @onclick='() => SortStudentApproval("StudentSID", true)'>▲</span>
+                                        <span style="cursor: pointer; color: @(studentApprovalSortField=="StudentSID"&&!studentApprovalSortAsc?"#1890ff":"#ccc");" @onclick='() => SortStudentApproval("StudentSID", false)'>▼</span>
+                                    </span>
+                                </div>
+                            </th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">
+                                <div style="display: flex; align-items: center;">
+                                    <span>课程名称</span>
+                                    <span style="margin-left: 8px; flex-direction: column;">
+                                        <span style="cursor: pointer; color: @(studentApprovalSortField=="CourseName"&&studentApprovalSortAsc?"#1890ff":"#ccc");" @onclick='() => SortStudentApproval("CourseName", true)'>▲</span>
+                                        <span style="cursor: pointer; color: @(studentApprovalSortField=="CourseName"&&!studentApprovalSortAsc?"#1890ff":"#ccc");" @onclick='() => SortStudentApproval("CourseName", false)'>▼</span>
+                                    </span>
+                                </div>
+                            </th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center;">
+                                    <span>课程编号</span>
+                                    <span style="margin-left: 8px; flex-direction: column;">
+                                        <span style="cursor: pointer; color: @(studentApprovalSortField=="CourseCID"&&studentApprovalSortAsc?"#1890ff":"#ccc");" @onclick='() => SortStudentApproval("CourseCID", true)'>▲</span>
+                                        <span style="cursor: pointer; color: @(studentApprovalSortField=="CourseCID"&&!studentApprovalSortAsc?"#1890ff":"#ccc");" @onclick='() => SortStudentApproval("CourseCID", false)'>▼</span>
+                                    </span>
+                                </div>
+                            </th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center;">
+                                    <span>申请状态</span>
+                                    <span style="margin-left: 8px; flex-direction: column;">
+                                        <span style="cursor: pointer; color: @(studentApprovalSortField=="Status"&&studentApprovalSortAsc?"#1890ff":"#ccc");" @onclick='() => SortStudentApproval("Status", true)'>▲</span>
+                                        <span style="cursor: pointer; color: @(studentApprovalSortField=="Status"&&!studentApprovalSortAsc?"#1890ff":"#ccc");" @onclick='() => SortStudentApproval("Status", false)'>▼</span>
+                                    </span>
+                                </div>
+                            </th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center;">
+                                    <span>成绩</span>
+                                    <span style="margin-left: 8px; flex-direction: column;">
+                                        <span style="cursor: pointer; color: @(studentApprovalSortField=="Grade"&&studentApprovalSortAsc?"#1890ff":"#ccc");" @onclick='() => SortStudentApproval("Grade", true)'>▲</span>
+                                        <span style="cursor: pointer; color: @(studentApprovalSortField=="Grade"&&!studentApprovalSortAsc?"#1890ff":"#ccc");" @onclick='() => SortStudentApproval("Grade", false)'>▼</span>
+                                    </span>
+                                </div>
+                            </th>
                             <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">操作</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var enrollment in enrollments.Take(10))
+                        @foreach (var enrollment in GetSortedStudentApprovalData().Take(10))
                         {
                             <tr>
                                 <td style="padding: 12px; border: 1px solid #ddd;">@(enrollment.Student?.Name ?? "未知学生")</td>
@@ -202,7 +289,6 @@
     @if (activeTab == "teacher-assignment")
     {
         <div class="tab-content">
-            <h3><Icon Type="team" style="margin-right: 8px;" /> 教师课程分配管理</h3>
             
             @if (teacherCourses == null || !teacherCourses.Any())
             {
@@ -213,17 +299,65 @@
                 <table style="width: 100%; border-collapse: collapse; margin-top: 16px; border: 1px solid #ddd;">
                     <thead style="background: #f5f5f5;">
                         <tr>
-                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">课程名称</th>
-                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">课程编号</th>
-                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">学分</th>
-                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">授课教师</th>
-                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">工号</th>
-                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">分配状态</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">
+                                <div style="display: flex; align-items: center;">
+                                    <span>课程名称</span>
+                                    <span style="margin-left: 8px; flex-direction: column;">
+                                        <span style="cursor: pointer; color: @(teacherAssignmentSortField=="Name"&&teacherAssignmentSortAsc?"#1890ff":"#ccc");" @onclick='() => SortTeacherAssignment("Name", true)'>▲</span>
+                                        <span style="cursor: pointer; color: @(teacherAssignmentSortField=="Name"&&!teacherAssignmentSortAsc?"#1890ff":"#ccc");" @onclick='() => SortTeacherAssignment("Name", false)'>▼</span>
+                                    </span>
+                                </div>
+                            </th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center;">
+                                    <span>课程编号</span>
+                                    <span style="margin-left: 8px; flex-direction: column;">
+                                        <span style="cursor: pointer; color: @(teacherAssignmentSortField=="CID"&&teacherAssignmentSortAsc?"#1890ff":"#ccc");" @onclick='() => SortTeacherAssignment("CID", true)'>▲</span>
+                                        <span style="cursor: pointer; color: @(teacherAssignmentSortField=="CID"&&!teacherAssignmentSortAsc?"#1890ff":"#ccc");" @onclick='() => SortTeacherAssignment("CID", false)'>▼</span>
+                                    </span>
+                                </div>
+                            </th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center;">
+                                    <span>学分</span>
+                                    <span style="margin-left: 8px; flex-direction: column;">
+                                        <span style="cursor: pointer; color: @(teacherAssignmentSortField=="Credits"&&teacherAssignmentSortAsc?"#1890ff":"#ccc");" @onclick='() => SortTeacherAssignment("Credits", true)'>▲</span>
+                                        <span style="cursor: pointer; color: @(teacherAssignmentSortField=="Credits"&&!teacherAssignmentSortAsc?"#1890ff":"#ccc");" @onclick='() => SortTeacherAssignment("Credits", false)'>▼</span>
+                                    </span>
+                                </div>
+                            </th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center;">
+                                    <span>授课教师</span>
+                                    <span style="margin-left: 8px; flex-direction: column;">
+                                        <span style="cursor: pointer; color: @(teacherAssignmentSortField=="Teacher"&&teacherAssignmentSortAsc?"#1890ff":"#ccc");" @onclick='() => SortTeacherAssignment("Teacher", true)'>▲</span>
+                                        <span style="cursor: pointer; color: @(teacherAssignmentSortField=="Teacher"&&!teacherAssignmentSortAsc?"#1890ff":"#ccc");" @onclick='() => SortTeacherAssignment("Teacher", false)'>▼</span>
+                                    </span>
+                                </div>
+                            </th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center;">
+                                    <span>工号</span>
+                                    <span style="margin-left: 8px; flex-direction: column;">
+                                        <span style="cursor: pointer; color: @(teacherAssignmentSortField=="TeacherID"&&teacherAssignmentSortAsc?"#1890ff":"#ccc");" @onclick='() => SortTeacherAssignment("TeacherID", true)'>▲</span>
+                                        <span style="cursor: pointer; color: @(teacherAssignmentSortField=="TeacherID"&&!teacherAssignmentSortAsc?"#1890ff":"#ccc");" @onclick='() => SortTeacherAssignment("TeacherID", false)'>▼</span>
+                                    </span>
+                                </div>
+                            </th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center;">
+                                    <span>分配状态</span>
+                                    <span style="margin-left: 8px; flex-direction: column;">
+                                        <span style="cursor: pointer; color: @(teacherAssignmentSortField=="AssignmentStatus"&&teacherAssignmentSortAsc?"#1890ff":"#ccc");" @onclick='() => SortTeacherAssignment("AssignmentStatus", true)'>▲</span>
+                                        <span style="cursor: pointer; color: @(teacherAssignmentSortField=="AssignmentStatus"&&!teacherAssignmentSortAsc?"#1890ff":"#ccc");" @onclick='() => SortTeacherAssignment("AssignmentStatus", false)'>▼</span>
+                                    </span>
+                                </div>
+                            </th>
                             <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">操作</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var course in teacherCourses.Take(10))
+                        @foreach (var course in GetSortedTeacherAssignmentData().Take(10))
                         {
                             <tr>
                                 <td style="padding: 12px; border: 1px solid #ddd;">@course.Name</td>
@@ -319,6 +453,20 @@
     private bool assignTeacherModalVisible = false;
     private Course? selectedCourse = null;
     private int selectedTeacherId = 0;
+    
+    // 课程状态管理排序相关
+    private string courseStatusSortField = "Name";
+    private bool courseStatusSortAsc = true;
+    
+    // 学生选课审批排序相关
+    private string studentApprovalSortField = "StudentName";
+    private bool studentApprovalSortAsc = true;
+    
+    // 教师课程分配排序相关
+    private string teacherAssignmentSortField = "Name";
+    private bool teacherAssignmentSortAsc = true;
+
+    private string courseSearchText = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -371,8 +519,96 @@
         }
         return baseStyle + " hover: color: #1890ff;";
     }
-
-    private async Task UpdateCourseStatus(Course course, CourseStatus newStatus)
+    
+    private void SortCourseStatus(string field, bool asc)
+    {
+        courseStatusSortField = field;
+        courseStatusSortAsc = asc;
+        StateHasChanged();
+    }
+    
+    private List<Course> GetSortedCourseStatusData()
+    {
+        if (courses == null) return new List<Course>();
+        
+        switch (courseStatusSortField)
+        {
+            case "Name":
+                return courseStatusSortAsc ? courses.OrderBy(c => c.Name).ToList() : courses.OrderByDescending(c => c.Name).ToList();
+            case "CID":
+                return courseStatusSortAsc ? courses.OrderBy(c => c.CID).ToList() : courses.OrderByDescending(c => c.CID).ToList();
+            case "Credits":
+                return courseStatusSortAsc ? courses.OrderBy(c => c.Credits).ToList() : courses.OrderByDescending(c => c.Credits).ToList();
+            case "Teacher":
+                return courseStatusSortAsc ? courses.OrderBy(c => c.Teacher != null ? c.Teacher.Name : "").ToList() : courses.OrderByDescending(c => c.Teacher != null ? c.Teacher.Name : "").ToList();
+            case "CourseStatus":
+                return courseStatusSortAsc ? courses.OrderBy(c => c.CourseStatus).ToList() : courses.OrderByDescending(c => c.CourseStatus).ToList();
+            default:
+                return courses;
+                 }
+     }
+     
+     private void SortStudentApproval(string field, bool asc)
+     {
+         studentApprovalSortField = field;
+         studentApprovalSortAsc = asc;
+         StateHasChanged();
+     }
+     
+     private List<Enrollment> GetSortedStudentApprovalData()
+     {
+         if (enrollments == null) return new List<Enrollment>();
+         
+         switch (studentApprovalSortField)
+         {
+             case "StudentName":
+                 return studentApprovalSortAsc ? enrollments.OrderBy(e => e.Student?.Name ?? "").ToList() : enrollments.OrderByDescending(e => e.Student?.Name ?? "").ToList();
+             case "StudentSID":
+                 return studentApprovalSortAsc ? enrollments.OrderBy(e => e.StudentSID).ToList() : enrollments.OrderByDescending(e => e.StudentSID).ToList();
+             case "CourseName":
+                 return studentApprovalSortAsc ? enrollments.OrderBy(e => e.Course?.Name ?? "").ToList() : enrollments.OrderByDescending(e => e.Course?.Name ?? "").ToList();
+             case "CourseCID":
+                 return studentApprovalSortAsc ? enrollments.OrderBy(e => e.CourseCID).ToList() : enrollments.OrderByDescending(e => e.CourseCID).ToList();
+             case "Status":
+                 return studentApprovalSortAsc ? enrollments.OrderBy(e => e.Status).ToList() : enrollments.OrderByDescending(e => e.Status).ToList();
+             case "Grade":
+                 return studentApprovalSortAsc ? enrollments.OrderBy(e => e.Grade ?? 0).ToList() : enrollments.OrderByDescending(e => e.Grade ?? 0).ToList();
+             default:
+                 return enrollments;
+         }
+     }
+     
+     private void SortTeacherAssignment(string field, bool asc)
+     {
+         teacherAssignmentSortField = field;
+         teacherAssignmentSortAsc = asc;
+         StateHasChanged();
+     }
+     
+     private List<Course> GetSortedTeacherAssignmentData()
+     {
+         if (teacherCourses == null) return new List<Course>();
+         
+         switch (teacherAssignmentSortField)
+         {
+             case "Name":
+                 return teacherAssignmentSortAsc ? teacherCourses.OrderBy(c => c.Name).ToList() : teacherCourses.OrderByDescending(c => c.Name).ToList();
+             case "CID":
+                 return teacherAssignmentSortAsc ? teacherCourses.OrderBy(c => c.CID).ToList() : teacherCourses.OrderByDescending(c => c.CID).ToList();
+             case "Credits":
+                 return teacherAssignmentSortAsc ? teacherCourses.OrderBy(c => c.Credits).ToList() : teacherCourses.OrderByDescending(c => c.Credits).ToList();
+             case "Teacher":
+                 return teacherAssignmentSortAsc ? teacherCourses.OrderBy(c => c.Teacher != null ? c.Teacher.Name : "").ToList() : teacherCourses.OrderByDescending(c => c.Teacher != null ? c.Teacher.Name : "").ToList();
+             case "TeacherID":
+                 return teacherAssignmentSortAsc ? teacherCourses.OrderBy(c => c.Teacher != null ? c.Teacher.TID : 0).ToList() : teacherCourses.OrderByDescending(c => c.Teacher != null ? c.Teacher.TID : 0).ToList();
+             case "AssignmentStatus":
+                 return teacherAssignmentSortAsc ? teacherCourses.OrderBy(c => c.TeacherId.HasValue).ToList() : teacherCourses.OrderByDescending(c => c.TeacherId.HasValue).ToList();
+             default:
+                 return teacherCourses;
+         }
+     }
+ 
+     private async Task UpdateCourseStatus(Course course, CourseStatus newStatus)
     {
         try
         {
@@ -533,5 +769,34 @@
             CourseStatus.已结束 => "已结束",
             _ => status.ToString()
         };
+    }
+
+    private async Task SearchCourses()
+    {
+        if (string.IsNullOrEmpty(courseSearchText))
+        {
+            await LoadData(); // 如果没有搜索文本，则加载所有课程
+        }
+        else
+        {
+            // 搜索课程表中的任意内容
+            var searchLower = courseSearchText.ToLower();
+            courses = courses.Where(c =>
+                c.CID.ToString().Contains(courseSearchText) ||
+                (c.Name != null && c.Name.ToLower().Contains(searchLower)) ||
+                c.Credits.ToString().Contains(courseSearchText) ||
+                (c.Description != null && c.Description.ToLower().Contains(searchLower)) ||
+                c.CourseStatus.ToString().ToLower().Contains(searchLower) ||
+                (c.Teacher != null && c.Teacher.Name != null && c.Teacher.Name.ToLower().Contains(searchLower)) ||
+                (c.Teacher != null && c.Teacher.TID.ToString().Contains(courseSearchText)) ||
+                (c.Teacher != null && c.Teacher.Major != null && c.Teacher.Major.ToLower().Contains(searchLower)) ||
+                (c.Teacher != null && c.Teacher.Email != null && c.Teacher.Email.ToLower().Contains(searchLower)) ||
+                (c.CreateUser != null && c.CreateUser.ToLower().Contains(searchLower)) ||
+                (c.UpdateUser != null && c.UpdateUser.ToLower().Contains(searchLower)) ||
+                c.CreateDate.ToString().Contains(courseSearchText) ||
+                c.UpdateDate.ToString().Contains(courseSearchText)
+            ).ToList();
+            StateHasChanged();
+        }
     }
 }

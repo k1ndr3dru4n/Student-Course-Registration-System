@@ -4,9 +4,15 @@
 <AntDesign.Layout style="min-height: 100vh;">
     <!-- 统一的顶部栏 -->
     <AntDesign.Header style="background: linear-gradient(135deg, #4a90e2 0%, #357abd 50%, #2e6da4 100%); padding: 0 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 3px 10px rgba(0,0,0,0.15); position: fixed; top: 0; left: 0; right: 0; z-index: 1000; height: 60px;">
-        <!-- 左侧SMS品牌 -->
-        <div style="color: white; font-size: 1.4rem; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-            SMS
+        <!-- 左侧区域：SMS品牌 + 搜索框 -->
+        <div style="display: flex; align-items: center; gap: 24px;">
+            <!-- SMS品牌 -->
+            <div style="color: white; font-size: 1.4rem; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                SMS
+            </div>
+            
+            <!-- 功能搜索框 -->
+            <FunctionSearch />
         </div>
         
         <!-- 右侧用户菜单 -->

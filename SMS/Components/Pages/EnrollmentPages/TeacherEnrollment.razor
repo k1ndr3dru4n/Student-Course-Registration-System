@@ -3,6 +3,8 @@
 @using Microsoft.JSInterop
 @using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Web
+@using AntDesign
+@using System.Linq
 @inject SMS.CimContext DB
 @using SMS.Models
 @rendermode InteractiveServer
@@ -40,10 +42,6 @@
                     }
                 }
             </select>
-            <button @onclick="LoadTeacherData" disabled="@(selectedTeacherTID == 0)" 
-                    style="padding: 8px 16px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: @(selectedTeacherTID == 0 ? "not-allowed" : "pointer");">
-                加载课程
-            </button>
         </div>
     </div>
 
@@ -70,13 +68,6 @@
         @if (activeTab == 0)
         {
             <div style="border: 1px solid #f0f0f0; border-radius: 6px; padding: 16px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <h3 style="margin: 0;">我的课程</h3>
-                    <button @onclick="LoadTeacherAssignedCourses" 
-                            style="padding: 6px 12px; background: #f0f0f0; border: 1px solid #d9d9d9; border-radius: 4px; cursor: pointer;">
-                        刷新
-                    </button>
-                </div>
 
                 @if (teacherCourses == null)
                 {
@@ -98,15 +89,47 @@
                     <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
                         <thead>
                             <tr style="background: #fafafa;">
-                                <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: left;">课程名称</th>
-                                <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">课程号</th>
-                                <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">学分</th>
-                                <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">课程状态</th>
+                                <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: left;">
+                                    <div style="display: flex; align-items: center;">
+                                        <span>课程名称</span>
+                                        <span style="margin-left: 8px; flex-direction: column;">
+                                            <span style="cursor: pointer; color: @(courseManagementSortField=="Name"&&courseManagementSortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourseManagement("Name", true)'>▲</span>
+                                            <span style="cursor: pointer; color: @(courseManagementSortField=="Name"&&!courseManagementSortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourseManagement("Name", false)'>▼</span>
+                                        </span>
+                                    </div>
+                                </th>
+                                <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">
+                                    <div style="display: flex; align-items: center; justify-content: center;">
+                                        <span>课程号</span>
+                                        <span style="margin-left: 8px; flex-direction: column;">
+                                            <span style="cursor: pointer; color: @(courseManagementSortField=="CID"&&courseManagementSortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourseManagement("CID", true)'>▲</span>
+                                            <span style="cursor: pointer; color: @(courseManagementSortField=="CID"&&!courseManagementSortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourseManagement("CID", false)'>▼</span>
+                                        </span>
+                                    </div>
+                                </th>
+                                <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">
+                                    <div style="display: flex; align-items: center; justify-content: center;">
+                                        <span>学分</span>
+                                        <span style="margin-left: 8px; flex-direction: column;">
+                                            <span style="cursor: pointer; color: @(courseManagementSortField=="Credits"&&courseManagementSortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourseManagement("Credits", true)'>▲</span>
+                                            <span style="cursor: pointer; color: @(courseManagementSortField=="Credits"&&!courseManagementSortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourseManagement("Credits", false)'>▼</span>
+                                        </span>
+                                    </div>
+                                </th>
+                                <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">
+                                    <div style="display: flex; align-items: center; justify-content: center;">
+                                        <span>课程状态</span>
+                                        <span style="margin-left: 8px; flex-direction: column;">
+                                            <span style="cursor: pointer; color: @(courseManagementSortField=="CourseStatus"&&courseManagementSortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourseManagement("CourseStatus", true)'>▲</span>
+                                            <span style="cursor: pointer; color: @(courseManagementSortField=="CourseStatus"&&!courseManagementSortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourseManagement("CourseStatus", false)'>▼</span>
+                                        </span>
+                                    </div>
+                                </th>
                                 <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">操作</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var course in teacherCourses)
+                            @foreach (var course in GetSortedCourseManagementData())
                             {
                                 <tr>
                                     <td style="padding: 12px; border: 1px solid #f0f0f0;">@course.Name</td>
@@ -140,7 +163,6 @@
         @if (activeTab == 1)
         {
             <div style="border: 1px solid #f0f0f0; border-radius: 6px; padding: 16px;">
-                <h3>选择课程</h3>
 
                 @if (availableCourses == null)
                 {
@@ -156,20 +178,60 @@
                 }
                 else
                 {
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
-                        <thead>
-                            <tr style="background: #fafafa;">
-                                <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: left;">课程名称</th>
-                                <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">课程号</th>
-                                <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">学分</th>
-                                <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">课程状态</th>
-                                <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">授课教师</th>
-                                <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var course in availableCourses)
-                            {
+                                         <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+                         <thead>
+                             <tr style="background: #fafafa;">
+                                 <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: left;">
+                                     <div style="display: flex; align-items: center;">
+                                         <span>课程名称</span>
+                                         <span style="margin-left: 8px; flex-direction: column;">
+                                             <span style="cursor: pointer; color: @(availableCoursesSortField=="Name"&&availableCoursesSortAsc?"#1890ff":"#ccc");" @onclick='() => SortAvailableCourses("Name", true)'>▲</span>
+                                             <span style="cursor: pointer; color: @(availableCoursesSortField=="Name"&&!availableCoursesSortAsc?"#1890ff":"#ccc");" @onclick='() => SortAvailableCourses("Name", false)'>▼</span>
+                                         </span>
+                                     </div>
+                                 </th>
+                                 <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">
+                                     <div style="display: flex; align-items: center; justify-content: center;">
+                                         <span>课程号</span>
+                                         <span style="margin-left: 8px; flex-direction: column;">
+                                             <span style="cursor: pointer; color: @(availableCoursesSortField=="CID"&&availableCoursesSortAsc?"#1890ff":"#ccc");" @onclick='() => SortAvailableCourses("CID", true)'>▲</span>
+                                             <span style="cursor: pointer; color: @(availableCoursesSortField=="CID"&&!availableCoursesSortAsc?"#1890ff":"#ccc");" @onclick='() => SortAvailableCourses("CID", false)'>▼</span>
+                                         </span>
+                                     </div>
+                                 </th>
+                                 <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">
+                                     <div style="display: flex; align-items: center; justify-content: center;">
+                                         <span>学分</span>
+                                         <span style="margin-left: 8px; flex-direction: column;">
+                                             <span style="cursor: pointer; color: @(availableCoursesSortField=="Credits"&&availableCoursesSortAsc?"#1890ff":"#ccc");" @onclick='() => SortAvailableCourses("Credits", true)'>▲</span>
+                                             <span style="cursor: pointer; color: @(availableCoursesSortField=="Credits"&&!availableCoursesSortAsc?"#1890ff":"#ccc");" @onclick='() => SortAvailableCourses("Credits", false)'>▼</span>
+                                         </span>
+                                     </div>
+                                 </th>
+                                 <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">
+                                     <div style="display: flex; align-items: center; justify-content: center;">
+                                         <span>课程状态</span>
+                                         <span style="margin-left: 8px; flex-direction: column;">
+                                             <span style="cursor: pointer; color: @(availableCoursesSortField=="CourseStatus"&&availableCoursesSortAsc?"#1890ff":"#ccc");" @onclick='() => SortAvailableCourses("CourseStatus", true)'>▲</span>
+                                             <span style="cursor: pointer; color: @(availableCoursesSortField=="CourseStatus"&&!availableCoursesSortAsc?"#1890ff":"#ccc");" @onclick='() => SortAvailableCourses("CourseStatus", false)'>▼</span>
+                                         </span>
+                                     </div>
+                                 </th>
+                                 <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">
+                                     <div style="display: flex; align-items: center; justify-content: center;">
+                                         <span>授课教师</span>
+                                         <span style="margin-left: 8px; flex-direction: column;">
+                                             <span style="cursor: pointer; color: @(availableCoursesSortField=="Teacher"&&availableCoursesSortAsc?"#1890ff":"#ccc");" @onclick='() => SortAvailableCourses("Teacher", true)'>▲</span>
+                                             <span style="cursor: pointer; color: @(availableCoursesSortField=="Teacher"&&!availableCoursesSortAsc?"#1890ff":"#ccc");" @onclick='() => SortAvailableCourses("Teacher", false)'>▼</span>
+                                         </span>
+                                     </div>
+                                 </th>
+                                 <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">操作</th>
+                             </tr>
+                         </thead>
+                                                 <tbody>
+                             @foreach (var course in GetSortedAvailableCoursesData())
+                             {
                                 <tr>
                                     <td style="padding: 12px; border: 1px solid #f0f0f0;">@course.Name</td>
                                     <td style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">@course.CID</td>
@@ -226,7 +288,6 @@
         @if (activeTab == 2)
         {
             <div style="border: 1px solid #f0f0f0; border-radius: 6px; padding: 16px;">
-                <h3>成绩管理</h3>
                 <p style="color: #666; margin-bottom: 16px;">只有已结束的课程才能录入成绩</p>
                 
                 @if (finishedCourses == null || !finishedCourses.Any())
@@ -248,20 +309,44 @@
 
                     @if (selectedCourseForGrade > 0 && courseEnrollments != null && courseEnrollments.Any())
                     {
-                        <table style="width: 100%; border-collapse: collapse; margin-top: 16px; border: 1px solid #ddd;">
-                            <thead style="background: #f5f5f5;">
-                                <tr>
-                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">学生姓名</th>
-                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">学号</th>
-                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">选课状态</th>
-                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">当前成绩</th>
-                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">录入成绩</th>
-                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var enrollment in courseEnrollments.Where(e => e.Status == "Active"))
-                                {
+                                                 <table style="width: 100%; border-collapse: collapse; margin-top: 16px; border: 1px solid #ddd;">
+                             <thead style="background: #f5f5f5;">
+                                 <tr>
+                                     <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">
+                                         <div style="display: flex; align-items: center;">
+                                             <span>学生姓名</span>
+                                             <span style="margin-left: 8px; flex-direction: column;">
+                                                 <span style="cursor: pointer; color: @(gradeManagementSortField=="StudentName"&&gradeManagementSortAsc?"#1890ff":"#ccc");" @onclick='() => SortGradeManagement("StudentName", true)'>▲</span>
+                                                 <span style="cursor: pointer; color: @(gradeManagementSortField=="StudentName"&&!gradeManagementSortAsc?"#1890ff":"#ccc");" @onclick='() => SortGradeManagement("StudentName", false)'>▼</span>
+                                             </span>
+                                         </div>
+                                     </th>
+                                     <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                                         <div style="display: flex; align-items: center; justify-content: center;">
+                                             <span>学号</span>
+                                             <span style="margin-left: 8px; flex-direction: column;">
+                                                 <span style="cursor: pointer; color: @(gradeManagementSortField=="StudentSID"&&gradeManagementSortAsc?"#1890ff":"#ccc");" @onclick='() => SortGradeManagement("StudentSID", true)'>▲</span>
+                                                 <span style="cursor: pointer; color: @(gradeManagementSortField=="StudentSID"&&!gradeManagementSortAsc?"#1890ff":"#ccc");" @onclick='() => SortGradeManagement("StudentSID", false)'>▼</span>
+                                             </span>
+                                         </div>
+                                     </th>
+                                     <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">选课状态</th>
+                                     <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                                         <div style="display: flex; align-items: center; justify-content: center;">
+                                             <span>当前成绩</span>
+                                             <span style="margin-left: 8px; flex-direction: column;">
+                                                 <span style="cursor: pointer; color: @(gradeManagementSortField=="Grade"&&gradeManagementSortAsc?"#1890ff":"#ccc");" @onclick='() => SortGradeManagement("Grade", true)'>▲</span>
+                                                 <span style="cursor: pointer; color: @(gradeManagementSortField=="Grade"&&!gradeManagementSortAsc?"#1890ff":"#ccc");" @onclick='() => SortGradeManagement("Grade", false)'>▼</span>
+                                             </span>
+                                         </div>
+                                     </th>
+                                     <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">录入成绩</th>
+                                     <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">操作</th>
+                                 </tr>
+                             </thead>
+                                                         <tbody>
+                                 @foreach (var enrollment in GetSortedGradeManagementData())
+                                 {
                                     <tr>
                                         <td style="padding: 12px; border: 1px solid #ddd;">@(enrollment.Student?.Name ?? "未知学生")</td>
                                         <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">@enrollment.StudentSID</td>
@@ -308,8 +393,21 @@
 @code {
     // 教师相关
     private List<Teacher>? teachers;
-    private int selectedTeacherTID = 0;
+    private int _selectedTeacherTID = 0;
     private List<Course>? teacherCourses;
+    
+    private int selectedTeacherTID
+    {
+        get => _selectedTeacherTID;
+        set
+        {
+            if (_selectedTeacherTID != value)
+            {
+                _selectedTeacherTID = value;
+                _ = OnTeacherChanged();
+            }
+        }
+    }
     
     // 标签页控制
     private int activeTab = 0; // 0: 课程管理, 1: 选择课程, 2: 成绩管理
@@ -318,10 +416,25 @@
     private List<Course>? availableCourses;
     
     // 成绩管理相关
-    private List<Course> finishedCourses = new();
+    private List<Course>? finishedCourses = new();
     private List<Enrollment> courseEnrollments = new();
     private int selectedCourseForGrade = 0;
     private Dictionary<int, int> gradeInputs = new();
+    
+    // 课程管理排序相关
+    private string courseManagementSortField = "Name";
+    private bool courseManagementSortAsc = true;
+    
+    // 选择课程排序相关
+    private string availableCoursesSortField = "Name";
+    private bool availableCoursesSortAsc = true;
+    
+    // 成绩管理排序相关
+    private string gradeManagementSortField = "StudentName";
+    private bool gradeManagementSortAsc = true;
+
+    // 搜索文本
+    private string courseSearchText = string.Empty;
     
     protected override async Task OnInitializedAsync()
     {
@@ -403,7 +516,117 @@
         }
     }
 
-    private async Task ApplyCourse(Course course)
+    private async Task SearchCourses()
+    {
+        if (string.IsNullOrEmpty(courseSearchText))
+        {
+            // 如果没有搜索文本，则重新加载所有课程
+            await OnTeacherChanged();
+        }
+        else
+        {
+            // 根据搜索文本过滤课程
+            if (teacherCourses != null)
+            {
+                var filtered = teacherCourses.Where(c =>
+                    c.CID.ToString().Contains(courseSearchText) ||
+                    (c.Name != null && c.Name.Contains(courseSearchText, StringComparison.OrdinalIgnoreCase)) ||
+                    c.Credits.ToString().Contains(courseSearchText) ||
+                    (c.Description != null && c.Description.Contains(courseSearchText, StringComparison.OrdinalIgnoreCase)) ||
+                    c.CourseStatus.ToString().Contains(courseSearchText, StringComparison.OrdinalIgnoreCase) ||
+                    (c.CreateUser != null && c.CreateUser.Contains(courseSearchText, StringComparison.OrdinalIgnoreCase)) ||
+                    (c.UpdateUser != null && c.UpdateUser.Contains(courseSearchText, StringComparison.OrdinalIgnoreCase)) ||
+                    c.CreateDate.ToString().Contains(courseSearchText) ||
+                    c.UpdateDate.ToString().Contains(courseSearchText)
+                ).ToList();
+                
+                teacherCourses = filtered;
+                StateHasChanged();
+            }
+        }
+    }
+    
+    private void SortCourseManagement(string field, bool asc)
+    {
+        courseManagementSortField = field;
+        courseManagementSortAsc = asc;
+        StateHasChanged();
+    }
+    
+    private List<Course> GetSortedCourseManagementData()
+    {
+        if (teacherCourses == null) return new List<Course>();
+        
+        switch (courseManagementSortField)
+        {
+            case "Name":
+                return courseManagementSortAsc ? teacherCourses.OrderBy(c => c.Name).ToList() : teacherCourses.OrderByDescending(c => c.Name).ToList();
+            case "CID":
+                return courseManagementSortAsc ? teacherCourses.OrderBy(c => c.CID).ToList() : teacherCourses.OrderByDescending(c => c.CID).ToList();
+            case "Credits":
+                return courseManagementSortAsc ? teacherCourses.OrderBy(c => c.Credits).ToList() : teacherCourses.OrderByDescending(c => c.Credits).ToList();
+            case "CourseStatus":
+                return courseManagementSortAsc ? teacherCourses.OrderBy(c => c.CourseStatus).ToList() : teacherCourses.OrderByDescending(c => c.CourseStatus).ToList();
+            default:
+                return teacherCourses;
+                 }
+     }
+     
+     private void SortAvailableCourses(string field, bool asc)
+     {
+         availableCoursesSortField = field;
+         availableCoursesSortAsc = asc;
+         StateHasChanged();
+     }
+     
+     private List<Course> GetSortedAvailableCoursesData()
+     {
+         if (availableCourses == null) return new List<Course>();
+         
+         switch (availableCoursesSortField)
+         {
+             case "Name":
+                 return availableCoursesSortAsc ? availableCourses.OrderBy(c => c.Name).ToList() : availableCourses.OrderByDescending(c => c.Name).ToList();
+             case "CID":
+                 return availableCoursesSortAsc ? availableCourses.OrderBy(c => c.CID).ToList() : availableCourses.OrderByDescending(c => c.CID).ToList();
+             case "Credits":
+                 return availableCoursesSortAsc ? availableCourses.OrderBy(c => c.Credits).ToList() : availableCourses.OrderByDescending(c => c.Credits).ToList();
+             case "CourseStatus":
+                 return availableCoursesSortAsc ? availableCourses.OrderBy(c => c.CourseStatus).ToList() : availableCourses.OrderByDescending(c => c.CourseStatus).ToList();
+             case "Teacher":
+                 return availableCoursesSortAsc ? availableCourses.OrderBy(c => c.Teacher != null ? c.Teacher.Name : "").ToList() : availableCourses.OrderByDescending(c => c.Teacher != null ? c.Teacher.Name : "").ToList();
+             default:
+                 return availableCourses;
+         }
+     }
+     
+     private void SortGradeManagement(string field, bool asc)
+     {
+         gradeManagementSortField = field;
+         gradeManagementSortAsc = asc;
+         StateHasChanged();
+     }
+     
+     private List<Enrollment> GetSortedGradeManagementData()
+     {
+         if (courseEnrollments == null) return new List<Enrollment>();
+         
+         var activeEnrollments = courseEnrollments.Where(e => e.Status == "Active").ToList();
+         
+         switch (gradeManagementSortField)
+         {
+             case "StudentName":
+                 return gradeManagementSortAsc ? activeEnrollments.OrderBy(e => e.Student?.Name ?? "").ToList() : activeEnrollments.OrderByDescending(e => e.Student?.Name ?? "").ToList();
+             case "StudentSID":
+                 return gradeManagementSortAsc ? activeEnrollments.OrderBy(e => e.StudentSID).ToList() : activeEnrollments.OrderByDescending(e => e.StudentSID).ToList();
+             case "Grade":
+                 return gradeManagementSortAsc ? activeEnrollments.OrderBy(e => e.Grade ?? 0).ToList() : activeEnrollments.OrderByDescending(e => e.Grade ?? 0).ToList();
+             default:
+                 return activeEnrollments;
+         }
+     }
+ 
+     private async Task ApplyCourse(Course course)
     {
         try
         {
@@ -578,6 +801,22 @@
         else
         {
             return "#ff4d4f"; // 红色 - 不及格
+        }
+    }
+    
+    private async Task OnTeacherChanged()
+    {
+        if (selectedTeacherTID > 0)
+        {
+            await LoadTeacherData();
+        }
+        else
+        {
+            // 重置数据
+            teacherCourses = null;
+            availableCourses = null;
+            finishedCourses = null;
+            StateHasChanged();
         }
     }
 }

@@ -1,3 +1,4 @@
+@page "/students/details/{Id:int}"
 @page "/students/details"
 @inject SMS.CimContext DB
 @using SMS.Models
@@ -16,26 +17,26 @@
         <p><em>Loading...</em></p>
     }
     else {
-        <AntDesign.Card Title="学生详细信息">
-            <AntDesign.Descriptions Bordered="true" Column="1">
-                <AntDesign.DescriptionsItem Title="学号(SID)">@student.SID</AntDesign.DescriptionsItem>
-                <AntDesign.DescriptionsItem Title="姓名">@student.Name</AntDesign.DescriptionsItem>
-                <AntDesign.DescriptionsItem Title="年龄">@student.Age</AntDesign.DescriptionsItem>
-                <AntDesign.DescriptionsItem Title="专业">@student.Major</AntDesign.DescriptionsItem>
-                <AntDesign.DescriptionsItem Title="邮箱">@student.Email</AntDesign.DescriptionsItem>
-            </AntDesign.Descriptions>
-            
-            <div style="margin-top: 16px;">
-                <AntDesign.Button Type="@AntDesign.ButtonType.Primary" @onclick="@(() => NavigationManager.NavigateTo($"/students/edit?id={student.Id}"))">编辑</AntDesign.Button>
-                <AntDesign.Button style="margin-left: 8px;" @onclick="@(() => NavigationManager.NavigateTo("/students"))">返回列表</AntDesign.Button>
+        <div style="background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 24px; margin-bottom: 24px;">
+            <h3 style="margin-bottom: 16px;">学生详细信息</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr><td style="font-weight: bold; width: 120px;">学号(SID)</td><td>@student.SID</td></tr>
+                <tr><td style="font-weight: bold;">姓名</td><td>@student.Name</td></tr>
+                <tr><td style="font-weight: bold;">年龄</td><td>@student.Age</td></tr>
+                <tr><td style="font-weight: bold;">专业</td><td>@student.Major</td></tr>
+                <tr><td style="font-weight: bold;">邮箱</td><td>@student.Email</td></tr>
+            </table>
+            <div style="margin-top: 24px;">
+                <a href="/students" class="ant-btn ant-btn-primary" style="text-decoration: none; color: white; padding: 6px 15px; border-radius: 6px; background: #1890ff; border: 1px solid #1890ff;">返回列表</a>
             </div>
-        </AntDesign.Card>
+        </div>
     }
 </div>
 
 @code {
     Student? student;
 
+    [Parameter]
     [SupplyParameterFromQuery]
     public int Id { get; set; }
 

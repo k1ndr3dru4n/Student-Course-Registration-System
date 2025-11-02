@@ -13,20 +13,20 @@
         </AntDesign.Tag>
         
         <!-- 用户菜单 -->
-        <AntDesign.Dropdown>
+        <AntDesign.Dropdown Trigger="@(new AntDesign.Trigger[] { AntDesign.Trigger.Click })">
             <Overlay>
                 <AntDesign.Menu>
-                    <AntDesign.MenuItem Key="password" Icon="key">
-                        <a href="/forgot-password" style="text-decoration: none; color: inherit;">修改密码</a>
+                    <AntDesign.MenuItem Key="password" Icon="key" OnClick="async () => await DelayedNavigateToResetPassword()">
+                        修改密码
                     </AntDesign.MenuItem>
                     <AntDesign.MenuDivider />
-                    <AntDesign.MenuItem Key="logout" Icon="logout" OnClick="Logout">
+                    <AntDesign.MenuItem Key="logout" Icon="logout" OnClick="async () => await DelayedLogout()">
                         <span style="color: #ff4d4f;">退出登录</span>
                     </AntDesign.MenuItem>
                 </AntDesign.Menu>
             </Overlay>
             <ChildContent>
-                <AntDesign.Button Ghost="true" Icon="user" style="border-radius: 20px; color: white; border-color: white;">
+                <AntDesign.Button Ghost="true" Icon="user" style="border-radius: 20px; color: white; border-color: white; cursor: pointer;">
                     @currentUser
                 </AntDesign.Button>
             </ChildContent>
@@ -55,6 +55,11 @@ else
             UpdateTime();
             StartTimer();
             StateHasChanged();
+        }
+        else
+        {
+            // 每次渲染都重新加载用户信息，确保数据同步
+            await LoadCurrentUser();
         }
     }
 
@@ -85,23 +90,36 @@ else
         }
     }
 
+    private async Task DelayedLogout()
+    {
+        // 延迟关闭菜单，避免闪退
+        await Task.Delay(200);
+        await Logout();
+    }
+
+    private async Task DelayedNavigateToResetPassword()
+    {
+        await Task.Delay(200);
+        NavigateToResetPassword();
+    }
+
     private async Task Logout()
     {
         try
         {
-            // 清除本地存储的用户信息
             await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "currentUser");
-            
-            // 显示退出提示
             await JSRuntime.InvokeVoidAsync("alert", "已成功退出登录");
-            
-            // 跳转到登录页面
             NavigationManager.NavigateTo("/login", forceLoad: true);
         }
         catch (Exception ex)
         {
             await JSRuntime.InvokeVoidAsync("alert", $"退出登录失败: {ex.Message}");
         }
+    }
+
+    private void NavigateToResetPassword()
+    {
+        NavigationManager.NavigateTo("/forgot-password");
     }
 
     public void Dispose()

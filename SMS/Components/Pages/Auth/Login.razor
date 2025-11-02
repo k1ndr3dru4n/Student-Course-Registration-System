@@ -9,53 +9,109 @@
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
 
-<AntDesign.Row style="margin-top: 80px; justify-content: center;">
-    <AntDesign.Col Xs="22" Sm="16" Md="12" Lg="8" Xl="6">
-        <AntDesign.Card>
-            <Body>
-                <h3 style="text-align: center; margin-bottom: 24px;">登录</h3>
-                
-                @if (!string.IsNullOrEmpty(errorMessage))
-                {
-                    <AntDesign.Alert Type="@AntDesign.AlertType.Error" Message="@errorMessage" style="margin-bottom: 24px;" />
-                }
-
-                <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
-                    <DataAnnotationsValidator />
+<div style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; padding: 20px;">
+    <AntDesign.Row style="width: 100%; max-width: 400px;">
+        <AntDesign.Col Span="24">
+            <AntDesign.Card style="border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); border: none;">
+                <Body>
+                    <div style="padding: 40px;">
+                        <!-- 标题区域 -->
+                        <div style="text-align: center; margin-bottom: 32px;">
+                        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                            <AntDesign.Icon Type="user" style="font-size: 28px; color: white;" />
+                        </div>
+                        <h2 style="margin: 0; color: #1f2937; font-weight: 600; font-size: 24px;">欢迎回来</h2>
+                        <p style="margin: 8px 0 0; color: #6b7280; font-size: 14px;">请登录您的账户</p>
+                    </div>
                     
-                    <div style="margin-bottom: 16px;">
-                        <label>用户名</label>
-                        <AntDesign.Input @bind-Value="loginModel.Username" Placeholder="请输入用户名" />
-                        <ValidationMessage For="@(() => loginModel.Username)" />
-                    </div>
+                    <!-- 错误消息 -->
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <AntDesign.Alert Type="@AntDesign.AlertType.Error" Message="@errorMessage" 
+                                         style="margin-bottom: 24px; border-radius: 8px;" ShowIcon="true" />
+                    }
 
-                    <div style="margin-bottom: 16px;">
-                        <label>密码</label>
-                        <AntDesign.InputPassword @bind-Value="loginModel.Password" Placeholder="请输入密码" />
-                        <ValidationMessage For="@(() => loginModel.Password)" />
-                    </div>
+                    <!-- 登录表单 -->
+                    <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+                        <DataAnnotationsValidator />
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 8px; color: #374151; font-weight: 500; font-size: 14px;">
+                                <AntDesign.Icon Type="user" style="margin-right: 6px; color: #6b7280;" />
+                                用户名
+                            </label>
+                            <AntDesign.Input @bind-Value="loginModel.Username" 
+                                            Placeholder="请输入您的用户名" 
+                                            Size="@AntDesign.InputSize.Large"
+                                            style="border-radius: 8px; border: 1px solid #d1d5db;" />
+                            <ValidationMessage For="@(() => loginModel.Username)" 
+                                              style="color: #ef4444; font-size: 12px; margin-top: 4px;" />
+                        </div>
 
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                        <AntDesign.Checkbox @bind-Value="loginModel.RememberMe">记住我</AntDesign.Checkbox>
-                        <a href="/forgot-password">忘记密码？</a>
-                    </div>
+                        <div style="margin-bottom: 24px;">
+                            <label style="display: block; margin-bottom: 8px; color: #374151; font-weight: 500; font-size: 14px;">
+                                <AntDesign.Icon Type="lock" style="margin-right: 6px; color: #6b7280;" />
+                                密码
+                            </label>
+                            <AntDesign.InputPassword @bind-Value="loginModel.Password" 
+                                                   Placeholder="请输入您的密码" 
+                                                   Size="@AntDesign.InputSize.Large"
+                                                   style="border-radius: 8px; border: 1px solid #d1d5db;" />
+                            <ValidationMessage For="@(() => loginModel.Password)" 
+                                              style="color: #ef4444; font-size: 12px; margin-top: 4px;" />
+                        </div>
 
-                    <AntDesign.Button Type="@AntDesign.ButtonType.Primary" HtmlType="submit" Block="true" Size="@AntDesign.ButtonSize.Large">
-                        登录
-                    </AntDesign.Button>
-                    
-                    <div style="text-align: center; margin-top: 16px;">
-                        <span>还没有账号？ <a href="/register">立即注册</a></span>
+                        <!-- 记住我和忘记密码 -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+                            <AntDesign.Checkbox @bind-Value="loginModel.RememberMe" 
+                                              style="color: #6b7280; font-size: 14px;">
+                                记住我
+                            </AntDesign.Checkbox>
+                            <a href="/forgot-password" 
+                               style="color: #667eea; text-decoration: none; font-size: 14px; font-weight: 500;">
+                                忘记密码？
+                            </a>
+                        </div>
+
+                        <!-- 登录按钮 -->
+                        <AntDesign.Button Type="@AntDesign.ButtonType.Primary" 
+                                         HtmlType="submit" 
+                                         Block="true" 
+                                         Size="@AntDesign.ButtonSize.Large" 
+                                         Loading="@isLoggingIn"
+                                         style="height: 48px; border-radius: 8px; font-weight: 600; font-size: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                            @if (isLoggingIn)
+                            {
+                                <span>登录中...</span>
+                            }
+                            else
+                            {
+                                <span>登录</span>
+                            }
+                        </AntDesign.Button>
+                        
+                        <!-- 注册链接 -->
+                        <div style="text-align: center; margin-top: 24px; padding-top: 24px; border-top: 1px solid #f3f4f6;">
+                            <span style="color: #6b7280; font-size: 14px;">
+                                还没有账号？ 
+                                <a href="/register" 
+                                   style="color: #667eea; text-decoration: none; font-weight: 500;">
+                                    立即注册
+                                </a>
+                            </span>
+                        </div>
+                    </EditForm>
                     </div>
-                </EditForm>
-            </Body>
-        </AntDesign.Card>
-    </AntDesign.Col>
-</AntDesign.Row>
+                </Body>
+            </AntDesign.Card>
+        </AntDesign.Col>
+    </AntDesign.Row>
+</div>
 
 @code {
     private LoginModel loginModel = new();
     private string errorMessage = string.Empty;
+    private bool isLoggingIn = false;
 
     [SupplyParameterFromQuery]
     public string? Error { get; set; }
@@ -87,6 +143,10 @@
 
     private async Task HandleLogin(EditContext context)
     {
+        isLoggingIn = true;
+        errorMessage = string.Empty;
+        StateHasChanged();
+        
         try
         {
             using var context_db = await DbContextFactory.CreateDbContextAsync();
@@ -119,6 +179,11 @@
             {
                 errorMessage += $" 详细信息: {ex.InnerException.Message}";
             }
+        }
+        finally
+        {
+            isLoggingIn = false;
+            StateHasChanged();
         }
         
         StateHasChanged();

@@ -1,3 +1,4 @@
+@page "/courses/details/{Id:int}"
 @page "/courses/details"
 @inject SMS.CimContext DB
 @using SMS.Models
@@ -10,28 +11,25 @@
 <h1>Details</h1>
 
 <div>
-    <h4>Course</h4>
+    <h4>课程</h4>
     <hr />
     @if (course is null)
     {
         <p><em>Loading...</em></p>
     }
     else {
-        <dl class="row">
-            <dt class="col-sm-2">CID</dt>
-            <dd class="col-sm-10">@course.CID</dd>
-            <dt class="col-sm-2">Name</dt>
-            <dd class="col-sm-10">@course.Name</dd>
-            <dt class="col-sm-2">Credits</dt>
-            <dd class="col-sm-10">@course.Credits</dd>
-            <dt class="col-sm-2">Description</dt>
-            <dd class="col-sm-10">@course.Description</dd>
-            <dt class="col-sm-2">课程状态</dt>
-            <dd class="col-sm-10">@course.CourseStatus</dd>
-        </dl>
-        <div>
-            <a href="@($"/courses/edit?id={course.Id}")">Edit</a> |
-            <a href="@($"/courses")">Back to List</a>
+        <div style="background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 24px; margin-bottom: 24px;">
+            <h3 style="margin-bottom: 16px;">课程详细信息</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr><td style="font-weight: bold; width: 120px;">课程编号(CID)</td><td>@course.CID</td></tr>
+                <tr><td style="font-weight: bold;">课程名称</td><td>@course.Name</td></tr>
+                <tr><td style="font-weight: bold;">学分</td><td>@course.Credits</td></tr>
+                <tr><td style="font-weight: bold;">课程描述</td><td>@course.Description</td></tr>
+                <tr><td style="font-weight: bold;">课程状态</td><td>@course.CourseStatus</td></tr>
+            </table>
+            <div style="margin-top: 24px;">
+                <a href="/courses" class="ant-btn ant-btn-primary" style="text-decoration: none; color: white; padding: 6px 15px; border-radius: 6px; background: #1890ff; border: 1px solid #1890ff;">返回列表</a>
+            </div>
         </div>
     }
 </div>
@@ -39,6 +37,7 @@
 @code {
     Course? course;
 
+    [Parameter]
     [SupplyParameterFromQuery]
     public int Id { get; set; }
 

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace SMS.Models
 {
@@ -51,9 +52,11 @@ namespace SMS.Models
 
         // 导航属性
         [ForeignKey("StudentSID")]
+        [JsonIgnore]
         public virtual Student? Student { get; set; }
 
         [ForeignKey("CourseCID")]
+        [JsonIgnore]
         public virtual Course? Course { get; set; }
     }
 }

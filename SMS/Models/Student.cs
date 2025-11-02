@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace SMS.Models;
 [Table("SMS_Students")]
@@ -25,5 +26,6 @@ public class Student
     /// <summary>
     /// 该学生的所有选课记录
     /// </summary>
+    [JsonIgnore]
     public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
 }

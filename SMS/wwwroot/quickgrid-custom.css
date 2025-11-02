@@ -1,0 +1,46 @@
+.quickgrid-table th:last-child, .quickgrid-table td:last-child {
+    min-width: 200px;
+    text-align: center;
+    white-space: normal;
+    vertical-align: middle;
+    font-size: 15px;
+}
+.quickgrid-table td:last-child .ant-btn {
+    margin: 2px 2px;
+    display: inline-block;
+    font-size: 14px;
+    padding: 2px 8px;
+}
+.quickgrid-table td:last-child a, .quickgrid-table td:last-child span {
+    font-size: 14px;
+}
+/* 增大表格尺寸 */
+.quickgrid-table {
+    font-size: 18px;
+}
+.quickgrid-table th {
+    padding: 10px 18px;
+    white-space: nowrap;
+    font-size: 18px;
+}
+.quickgrid-table td {
+    padding: 16px 12px;
+}
+
+/* 双箭头排序样式 */
+.quickgrid-sort-icons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    gap: 2px;
+}
+.quickgrid-sort-arrow {
+    font-size: 16px;
+    color: #1890ff;
+    line-height: 1;
+}
+.quickgrid-sort-arrow.inactive {
+    color: #ccc;
+}

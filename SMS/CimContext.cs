@@ -5,7 +5,11 @@ namespace SMS
 {
     public class CimContext : DbContext
     {
-        public CimContext(DbContextOptions<CimContext> options) : base(options) { }
+        public CimContext(DbContextOptions<CimContext> options) : base(options) 
+        { 
+            // 禁用延迟加载以避免循环引用
+            ChangeTracker.LazyLoadingEnabled = false;
+        }
         public DbSet<Student> SMS_Students { get; set; }
         public DbSet<Teacher> SMS_Teachers { get; set; }
         public DbSet<User> SMS_Users { get; set; }

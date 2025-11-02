@@ -1,0 +1,130 @@
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<style>
+    .search-result-item:hover {
+        background-color: #f8f9fa !important;
+    }
+</style>
+
+<div style="position: relative; width: 300px;">
+    <AntDesign.Input @bind-Value="searchText" 
+                     @oninput="@OnSearchTextChanged"
+                     @onkeypress="@OnKeyPress"
+                     @onfocus="@OnFocus"
+                     @onblur="@OnBlur"
+                     Placeholder="搜索功能模块..."
+                     Size="@AntDesign.InputSize.Default"
+                     style="border-radius: 20px; background: rgba(255,255,255,0.9); border: 1px solid rgba(255,255,255,0.3);">
+        <Prefix>
+            <AntDesign.Icon Type="search" style="color: #666;" />
+        </Prefix>
+    </AntDesign.Input>
+    
+    @if (showResults && filteredFunctions.Any())
+    {
+        <div style="position: absolute; top: 100%; left: 0; right: 0; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001; margin-top: 4px; max-height: 300px; overflow-y: auto;">
+            @foreach (var function in filteredFunctions)
+            {
+                <div @onclick="@(() => NavigateToFunction(function))" 
+                     style="padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; transition: background-color 0.2s ease;"
+                     class="search-result-item">
+                    <AntDesign.Icon Type="@function.Icon" style="margin-right: 12px; color: #1890ff; font-size: 16px;" />
+                    <div>
+                        <div style="font-weight: 500; color: #1f2937;">@function.Name</div>
+                        <div style="font-size: 12px; color: #6b7280;">@function.Description</div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    
+    @if (showResults && !string.IsNullOrWhiteSpace(searchText) && !filteredFunctions.Any())
+    {
+        <div style="position: absolute; top: 100%; left: 0; right: 0; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001; margin-top: 4px; padding: 16px; text-align: center; color: #6b7280;">
+            <AntDesign.Icon Type="search" style="margin-bottom: 8px; font-size: 20px; color: #d1d5db;" />
+            <div>未找到相关功能</div>
+        </div>
+    }
+</div>
+
+@code {
+    private string searchText = string.Empty;
+    private bool showResults = false;
+    private List<FunctionItem> filteredFunctions = new();
+    
+    private readonly List<FunctionItem> allFunctions = new()
+    {
+        new FunctionItem { Name = "学生管理", Description = "管理学生信息、查看学生列表", Icon = "idcard", Url = "/students", Keywords = new[] { "学生", "student", "学生管理", "学生信息", "学生列表" } },
+        new FunctionItem { Name = "教师管理", Description = "管理教师信息、查看教师列表", Icon = "read", Url = "/teachers", Keywords = new[] { "教师", "teacher", "教师管理", "教师信息", "教师列表" } },
+        new FunctionItem { Name = "课程管理", Description = "管理课程信息、查看课程列表", Icon = "book", Url = "/courses", Keywords = new[] { "课程", "course", "课程管理", "课程信息", "课程列表" } },
+        new FunctionItem { Name = "选课管理", Description = "管理学生选课、教师课程分配", Icon = "team", Url = "/enrollment-management", Keywords = new[] { "选课", "enrollment", "选课管理", "课程分配", "学生选课", "教师课程" } },
+        new FunctionItem { Name = "收藏夹", Description = "查看收藏的功能模块", Icon = "star", Url = "/favorites", Keywords = new[] { "收藏", "favorite", "收藏夹", "星标" } },
+        new FunctionItem { Name = "目录", Description = "功能模块总览", Icon = "appstore", Url = "/directory", Keywords = new[] { "目录", "directory", "首页", "主页", "功能", "模块" } }
+    };
+    
+    private class FunctionItem
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
+        public string[] Keywords { get; set; } = Array.Empty<string>();
+    }
+    
+    private void OnKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && filteredFunctions.Any())
+        {
+            NavigateToFunction(filteredFunctions.First());
+        }
+    }
+    
+    private void OnFocus()
+    {
+        showResults = true;
+        FilterFunctions();
+    }
+    
+    private async Task OnBlur()
+    {
+        // 延迟隐藏结果，允许点击事件执行
+        await Task.Delay(200);
+        showResults = false;
+        StateHasChanged();
+    }
+    
+    private void FilterFunctions()
+    {
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            filteredFunctions = allFunctions.Take(4).ToList(); // 显示前4个作为默认建议
+        }
+        else
+        {
+            var searchLower = searchText.ToLower();
+            filteredFunctions = allFunctions
+                .Where(f => f.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                           f.Description.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                           f.Keywords.Any(k => k.Contains(searchText, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+        }
+        StateHasChanged();
+    }
+    
+    private void NavigateToFunction(FunctionItem function)
+    {
+        searchText = string.Empty;
+        showResults = false;
+        NavigationManager.NavigateTo(function.Url);
+    }
+    
+    private void OnSearchTextChanged(ChangeEventArgs e)
+    {
+        searchText = e.Value?.ToString() ?? string.Empty;
+        FilterFunctions();
+    }
+}

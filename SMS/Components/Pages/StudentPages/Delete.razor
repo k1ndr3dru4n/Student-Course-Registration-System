@@ -34,7 +34,16 @@
             
             <EditForm method="post" Model="student" OnValidSubmit="DeleteStudent" FormName="delete" Enhance>
                 <div style="margin-top: 16px;">
-                    <AntDesign.Button Type="@AntDesign.ButtonType.Primary" Danger="true" HtmlType="submit" Disabled="@(student is null)">删除</AntDesign.Button>
+                    <AntDesign.Button Type="@AntDesign.ButtonType.Primary" Danger="true" HtmlType="submit" Disabled="@(student is null)" Loading="@isDeleting">
+                        @if (isDeleting)
+                        {
+                            <span>删除中...</span>
+                        }
+                        else
+                        {
+                            <span>删除</span>
+                        }
+                    </AntDesign.Button>
                     <AntDesign.Button style="margin-left: 8px;" @onclick="@(() => NavigationManager.NavigateTo("/students"))">取消</AntDesign.Button>
                 </div>
             </EditForm>
@@ -46,6 +55,7 @@
     [Inject]
     public IJSRuntime JSRuntime { get; set; } = default!;
     private string currentUser = string.Empty;
+    private bool isDeleting = false;
     Student? student;
 
     [SupplyParameterFromQuery]
@@ -63,13 +73,24 @@
 
     public async Task DeleteStudent()
     {
-        currentUser = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "currentUser") ?? string.Empty;
-        if (!string.IsNullOrEmpty(currentUser))
+        isDeleting = true;
+        StateHasChanged();
+        
+        try
         {
-            student!.UpdateUser = currentUser;
+            currentUser = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "currentUser") ?? string.Empty;
+            if (!string.IsNullOrEmpty(currentUser))
+            {
+                student!.UpdateUser = currentUser;
+            }
+            DB.SMS_Students.Remove(student!);
+            await DB.SaveChangesAsync();
+            NavigationManager.NavigateTo("/students");
         }
-        DB.SMS_Students.Remove(student!);
-        await DB.SaveChangesAsync();
-        NavigationManager.NavigateTo("/students");
+        finally
+        {
+            isDeleting = false;
+            StateHasChanged();
+        }
     }
 }
