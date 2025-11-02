@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using SMS.Models;
 
 namespace SMS.Models
 {
@@ -19,5 +20,8 @@ namespace SMS.Models
         [Required(ErrorMessage = "请确认密码")]
         [Compare("Password", ErrorMessage = "两次输入的密码不一致")]
         public string ConfirmPassword { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "请选择用户角色")]
+        public UserRole Role { get; set; } = UserRole.学生;
     }
 }

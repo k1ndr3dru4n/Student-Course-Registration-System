@@ -1,29 +1,31 @@
 @using AntDesign
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
 
 <div class="nav-container">
     <div class="nav-wrapper">
-        <!-- 首页按钮 -->
-        <NavLink href="/home" style="text-decoration: none;">
+
+        
+        <!-- 首页按钮 - 根据角色跳转到不同首页 -->
+        <NavLink href="@GetHomeUrl()" style="text-decoration: none;">
             <div class="nav-circular-btn">
                 <Icon Type="home" Theme="@IconThemeType.Outline" style="font-size: 18px; color: #2c5aa0;" />
             </div>
         </NavLink>
         
-        <!-- 目录按钮 -->
-        <NavLink href="/directory" style="text-decoration: none;">
+        <!-- 目录按钮 - 根据角色显示不同目录内容 -->
+        <NavLink href="@GetDirectoryUrl()" style="text-decoration: none;">
             <div class="nav-circular-btn">
                 <Icon Type="bars" Theme="@IconThemeType.Outline" style="font-size: 18px; color: #2c5aa0;" />
             </div>
         </NavLink>
         
-        <!-- 收藏夹按钮 -->
-        <NavLink href="/favorites" style="text-decoration: none;">
+        <!-- 收藏夹按钮 - 根据角色显示不同收藏内容 -->
+        <NavLink href="@GetFavoritesUrl()" style="text-decoration: none;">
             <div class="nav-circular-btn">
                 <Icon Type="star" Theme="@IconThemeType.Outline" style="font-size: 18px; color: #2c5aa0;" />
             </div>
         </NavLink>
-        
-        
     </div>
 </div>
 
@@ -85,3 +87,74 @@
         transform: scale(0.95);
     }
 </style>
+
+@code {
+    private string userRole = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        // 同步获取用户角色，避免异步加载导致的问题
+        LoadUserRoleSync();
+    }
+
+    private void LoadUserRoleSync()
+    {
+        try
+        {
+            // 从URL推断用户角色
+            var currentPath = NavigationManager.Uri;
+            if (currentPath.Contains("/teacher-"))
+            {
+                userRole = "1";
+            }
+            else if (currentPath.Contains("/admin-"))
+            {
+                userRole = "2";
+            }
+            else
+            {
+                userRole = "0"; // 默认学生
+            }
+        }
+        catch
+        {
+            userRole = "0";
+        }
+    }
+
+
+
+    private string GetHomeUrl()
+    {
+        return userRole switch
+        {
+            "0" => "/student-home",    // 学生首页
+            "1" => "/teacher-home",    // 老师首页
+            "2" => "/admin-home",      // 管理员首页
+            _ => "/student-home"         // 默认学生首页
+        };
+    }
+
+    private string GetDirectoryUrl()
+    {
+        return userRole switch
+        {
+            "0" => "/student-directory",    // 学生目录
+            "1" => "/teacher-directory",    // 老师目录
+            "2" => "/admin-directory",      // 管理员目录
+            _ => "/student-directory"         // 默认学生目录
+        };
+    }
+
+    private string GetFavoritesUrl()
+    {
+        return userRole switch
+        {
+            "0" => "/student-favorites",    // 学生收藏夹
+            "1" => "/teacher-favorites",    // 老师收藏夹
+            "2" => "/admin-favorites",      // 管理员收藏夹
+            _ => "/student-favorites"         // 默认学生收藏夹
+        };
+    }
+
+}

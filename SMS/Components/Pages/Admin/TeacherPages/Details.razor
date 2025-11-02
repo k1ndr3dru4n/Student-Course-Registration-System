@@ -1,0 +1,51 @@
+@page "/admin-teachers/details"
+@inject SMS.CimContext DB
+@using SMS.Models
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h4>Teacher</h4>
+    <hr />
+    @if (teacher is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <div style="background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 24px; margin-bottom: 24px;">
+            <h3 style="margin-bottom: 16px;">教师详细信息</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr><td style="font-weight: bold; width: 120px;">教师号(TID)</td><td>@teacher.TID</td></tr>
+                <tr><td style="font-weight: bold;">姓名</td><td>@teacher.Name</td></tr>
+                <tr><td style="font-weight: bold;">年龄</td><td>@teacher.Age</td></tr>
+                <tr><td style="font-weight: bold;">专业</td><td>@teacher.Major</td></tr>
+                <tr><td style="font-weight: bold;">邮箱</td><td>@teacher.Email</td></tr>
+            </table>
+            <div style="margin-top: 24px;">
+                <a href="/admin-teachers" class="ant-btn ant-btn-primary" style="text-decoration: none; color: white; padding: 6px 15px; border-radius: 6px; background: #1890ff; border: 1px solid #1890ff;">返回列表</a>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    Teacher? teacher;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        teacher = await DB.SMS_Teachers.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (teacher is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

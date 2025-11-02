@@ -1,0 +1,116 @@
+@page "/admin-teachers/create"
+@inject SMS.CimContext DB
+@using SMS.Models
+@using Microsoft.EntityFrameworkCore
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h4>创建教师</h4>
+<AntDesign.Divider />
+<AntDesign.Row>
+    <AntDesign.Col Span="12">
+        <AntDesign.Card Title="新建教师信息">
+            <EditForm Model="@Teacher" OnValidSubmit="AddTeacher" FormName="create-teacher">
+                <DataAnnotationsValidator />
+                <ValidationSummary style="color: #ff4d4f;" />
+                <div style="margin-bottom: 16px;">
+                    <label>工号:</label>
+                    <AntDesign.Input Value="@generatedTID" Disabled="true" Placeholder="系统将自动生成工号" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px; background-color: #f5f5f5;" />
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label>姓名:</label>
+                    <InputText @bind-Value="Teacher.Name" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
+                    <ValidationMessage For="() => Teacher.Name" style="color: #ff4d4f;" />
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label>年龄:</label>
+                    <Microsoft.AspNetCore.Components.Forms.InputNumber @bind-Value="Teacher.Age" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
+                    <ValidationMessage For="() => Teacher.Age" style="color: #ff4d4f;" />
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label>专业:</label>
+                    <InputText @bind-Value="Teacher.Major" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
+                    <ValidationMessage For="() => Teacher.Major" style="color: #ff4d4f;" />
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label>邮箱:</label>
+                    <InputText @bind-Value="Teacher.Email" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
+                    <ValidationMessage For="() => Teacher.Email" style="color: #ff4d4f;" />
+                </div>
+                <div style="margin-bottom: 16px; display: flex; gap: 8px;">
+                    <AntDesign.Button Type="@AntDesign.ButtonType.Primary" HtmlType="submit" Loading="@isSubmitting">
+                        @if (isSubmitting)
+                        {
+                            <span>创建中...</span>
+                        }
+                        else
+                        {
+                            <span>创建</span>
+                        }
+                    </AntDesign.Button>
+                    <AntDesign.Button style="margin-left: 8px;" OnClick="@(() => NavigationManager.NavigateTo("/admin-teachers"))">取消</AntDesign.Button>
+                </div>
+            </EditForm>
+        </AntDesign.Card>
+    </AntDesign.Col>
+</AntDesign.Row>
+
+<div style="margin-top: 16px;">
+                <AntDesign.Button OnClick="@(() => NavigationManager.NavigateTo("/admin-teachers"))">返回列表</AntDesign.Button>
+</div>
+
+@code {
+
+    [Inject]
+    public IJSRuntime JSRuntime { get; set; } = default!;
+    private string currentUser = string.Empty;
+    private bool isSubmitting = false;
+    private string generatedTID = "系统将自动生成";
+
+    [SupplyParameterFromForm]
+    public Teacher Teacher { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // 预览下一个工号
+        var maxTID = await DB.SMS_Teachers.AnyAsync() 
+            ? await DB.SMS_Teachers.MaxAsync(t => t.TID) 
+            : 0;
+        generatedTID = $"T{(maxTID + 1):D6}"; // 格式：T000001
+    }
+
+    // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
+    public async Task AddTeacher()
+    {
+        isSubmitting = true;
+        StateHasChanged();
+        
+        try
+        {
+            // 自动生成工号
+            var maxTID = await DB.SMS_Teachers.AnyAsync() 
+                ? await DB.SMS_Teachers.MaxAsync(t => t.TID) 
+                : 0;
+            Teacher.TID = maxTID + 1;
+
+            currentUser = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "currentUser") ?? string.Empty;
+            if (!string.IsNullOrEmpty(currentUser))
+            {
+                Teacher.CreateUser = currentUser;
+                Teacher.UpdateUser = currentUser;
+            }
+            DB.SMS_Teachers.Add(Teacher);
+            await DB.SaveChangesAsync();
+            NavigationManager.NavigateTo("/admin-teachers");
+        }
+        finally
+        {
+            isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+}

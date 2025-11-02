@@ -1,0 +1,160 @@
+@page "/admin-teachers/edit"
+@inject SMS.CimContext DB
+@using SMS.Models
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+@rendermode InteractiveServer
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h4>Teacher</h4>
+<hr />
+@if (Teacher is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <AntDesign.Row>
+        <AntDesign.Col Span="12">
+            <AntDesign.Card Title="编辑教师信息">
+                <EditForm Model="@Teacher" OnValidSubmit="UpdateTeacher">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <input type="hidden" name="Teacher.Id" value="@Teacher.Id" />
+                    <div style="margin-bottom: 16px;">
+                        <label>工号(TID):</label>
+                        <Microsoft.AspNetCore.Components.Forms.InputNumber @bind-Value="Teacher.TID" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
+                        <ValidationMessage For="() => Teacher.TID" style="color: #ff4d4f;" />
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label>姓名:</label>
+                        <InputText @bind-Value="Teacher.Name" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
+                        <ValidationMessage For="() => Teacher.Name" style="color: #ff4d4f;" />
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label>年龄:</label>
+                        <Microsoft.AspNetCore.Components.Forms.InputNumber @bind-Value="Teacher.Age" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
+                        <ValidationMessage For="() => Teacher.Age" style="color: #ff4d4f;" />
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label>专业:</label>
+                        <InputText @bind-Value="Teacher.Major" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
+                        <ValidationMessage For="() => Teacher.Major" style="color: #ff4d4f;" />
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label>邮箱:</label>
+                        <InputText @bind-Value="Teacher.Email" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
+                        <ValidationMessage For="() => Teacher.Email" style="color: #ff4d4f;" />
+                    </div>
+                    <div style="margin-bottom: 16px; display: flex; gap: 8px;">
+                        <AntDesign.Button Type="@AntDesign.ButtonType.Primary" HtmlType="submit" Loading="@isSubmitting">
+                            @if (isSubmitting)
+                            {
+                                <span>保存中...</span>
+                            }
+                            else
+                            {
+                                <span>保存</span>
+                            }
+                        </AntDesign.Button>
+                        <AntDesign.Button style="margin-left: 8px;" OnClick="@(() => NavigationManager.NavigateTo("/admin-teachers"))">取消</AntDesign.Button>
+                    </div>
+                </EditForm>
+            </AntDesign.Card>
+        </AntDesign.Col>
+    </AntDesign.Row>
+}
+
+<div>
+    <a href="/admin-teachers">Back to List</a>
+</div>
+
+@code {
+    [Inject]
+    public IJSRuntime JSRuntime { get; set; } = default!;
+    private string currentUser = string.Empty;
+    private bool hasRendered = false;
+    private bool isSubmitting = false;
+
+    [SupplyParameterFromQuery]
+    public int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    public Teacher? Teacher { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Teacher ??= await DB.SMS_Teachers.FirstOrDefaultAsync(m => m.Id == Id);
+        if (Teacher is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !hasRendered)
+        {
+            hasRendered = true;
+            try
+            {
+                currentUser = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "currentUser") ?? string.Empty;
+                StateHasChanged();
+            }
+            catch (Exception)
+            {
+                // JavaScript interop failed, continue without current user
+                currentUser = string.Empty;
+            }
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    public async Task UpdateTeacher()
+    {
+        isSubmitting = true;
+        StateHasChanged();
+        
+        try
+        {
+            // 获取当前用户名（假设页面有 currentUser 变量）
+            if (!string.IsNullOrEmpty(currentUser))
+            {
+                Teacher!.UpdateUser = currentUser;
+            }
+            DB.Attach(Teacher!).State = EntityState.Modified;
+
+            try
+            {
+                await DB.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!TeacherExists(Teacher!.Id))
+                {
+                    NavigationManager.NavigateTo("notfound");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            NavigationManager.NavigateTo("/admin-teachers");
+        }
+        finally
+        {
+            isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+
+    bool TeacherExists(int id)
+    {
+        return DB.SMS_Teachers.Any(e => e.Id == id);
+    }
+}

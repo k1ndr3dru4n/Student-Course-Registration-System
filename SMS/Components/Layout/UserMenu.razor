@@ -13,7 +13,7 @@
         </AntDesign.Tag>
         
         <!-- 用户菜单 -->
-        <AntDesign.Dropdown Trigger="@(new AntDesign.Trigger[] { AntDesign.Trigger.Click })">
+    <AntDesign.Dropdown Trigger="@(new AntDesign.Trigger[] { AntDesign.Trigger.Click })" Placement="@AntDesign.Placement.BottomRight">
             <Overlay>
                 <AntDesign.Menu>
                     <AntDesign.MenuItem Key="password" Icon="key" OnClick="async () => await DelayedNavigateToResetPassword()">
@@ -27,7 +27,7 @@
             </Overlay>
             <ChildContent>
                 <AntDesign.Button Ghost="true" Icon="user" style="border-radius: 20px; color: white; border-color: white; cursor: pointer;">
-                    @currentUser
+                    @currentUser @if (!string.IsNullOrEmpty(currentUserRole)) { <span style="font-size: 12px; opacity: 0.8;">(@currentUserRole)</span> }
                 </AntDesign.Button>
             </ChildContent>
         </AntDesign.Dropdown>
@@ -44,22 +44,36 @@ else
 
 @code {
     private string currentUser = string.Empty;
+    private string currentUserRole = string.Empty;
     private string currentTime = string.Empty;
     private System.Threading.Timer? timer;
+    private bool isInitialized = false;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentUser();
+        await LoadCurrentUserRole();
+        UpdateTime();
+        isInitialized = true;
+    }
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await LoadCurrentUser();
-            UpdateTime();
             StartTimer();
-            StateHasChanged();
         }
-        else
+        return Task.CompletedTask;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // 确保用户信息和时间是最新的
+        if (isInitialized)
         {
-            // 每次渲染都重新加载用户信息，确保数据同步
             await LoadCurrentUser();
+            await LoadCurrentUserRole();
+            UpdateTime();
         }
     }
 
@@ -90,6 +104,26 @@ else
         }
     }
 
+    private async Task LoadCurrentUserRole()
+    {
+        try
+        {
+            // 从浏览器存储获取用户角色
+            var roleId = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userRole") ?? string.Empty;
+            currentUserRole = roleId switch
+            {
+                "0" => "学生",
+                "1" => "老师",
+                "2" => "管理员",
+                _ => string.Empty
+            };
+        }
+        catch
+        {
+            currentUserRole = string.Empty;
+        }
+    }
+
     private async Task DelayedLogout()
     {
         // 延迟关闭菜单，避免闪退
@@ -108,8 +142,9 @@ else
         try
         {
             await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "currentUser");
+            await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "userRole");
             await JSRuntime.InvokeVoidAsync("alert", "已成功退出登录");
-            NavigationManager.NavigateTo("/login", forceLoad: true);
+            NavigationManager.NavigateTo("/login", forceLoad: false);
         }
         catch (Exception ex)
         {

@@ -1,5 +1,6 @@
 @page "/"
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 @using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Authorization
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -12,7 +13,16 @@
 
         if (user.Identity?.IsAuthenticated == true)
         {
-            NavigationManager.NavigateTo("/home", true);
+            // 根据用户角色跳转到相应的首页
+            var userRole = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userRole") ?? string.Empty;
+            var targetPage = userRole switch
+            {
+                "0" => "/student-home",    // 学生首页
+                "1" => "/teacher-home",    // 老师首页
+                "2" => "/admin-home",      // 管理员首页
+                _ => "/admin-home"         // 默认管理员首页
+            };
+            NavigationManager.NavigateTo(targetPage, true);
         }
         else
         {

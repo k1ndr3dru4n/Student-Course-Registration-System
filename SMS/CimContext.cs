@@ -39,6 +39,21 @@ namespace SMS
                 .HasPrincipalKey(t => t.Id)
                 .IsRequired(false);
 
+            // 配置User与学生/教师的关联关系
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Student)
+                .WithMany()
+                .HasForeignKey(u => u.StudentId)
+                .HasPrincipalKey(s => s.Id)
+                .IsRequired(false);
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Teacher)
+                .WithMany()
+                .HasForeignKey(u => u.TeacherId)
+                .HasPrincipalKey(t => t.Id)
+                .IsRequired(false);
+
             base.OnModelCreating(modelBuilder);
         }
 

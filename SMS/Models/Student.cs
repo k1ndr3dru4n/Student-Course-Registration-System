@@ -22,6 +22,8 @@ public class Student
     public string? CreateUser { get; set; }
     public string? UpdateUser { get; set; }
 
+    public string? Username { get; set; } // 新增字段
+
     // 导航属性
     /// <summary>
     /// 该学生的所有选课记录

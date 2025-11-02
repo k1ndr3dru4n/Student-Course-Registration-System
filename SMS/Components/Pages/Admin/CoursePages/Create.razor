@@ -1,0 +1,126 @@
+@page "/admin-courses/create"
+@inject SMS.CimContext DB
+@using SMS.Models
+@using Microsoft.EntityFrameworkCore
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h4>创建课程</h4>
+<AntDesign.Divider />
+<AntDesign.Row>
+    <AntDesign.Col Span="12">
+        <AntDesign.Card Title="新建课程信息">
+            <EditForm Model="@Course" OnValidSubmit="AddCourse" FormName="create-course">
+                <DataAnnotationsValidator />
+                <ValidationSummary style="color: #ff4d4f;" />
+                <div style="margin-bottom: 16px;">
+                    <label>课程编号:</label>
+                    <AntDesign.Input Value="@generatedCID" Disabled="true" Placeholder="系统将自动生成课程编号" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px; background-color: #f5f5f5;" />
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label>课程名称:</label>
+                    <InputText @bind-Value="Course.Name" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
+                    <ValidationMessage For="() => Course.Name" style="color: #ff4d4f;" />
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label>学分:</label>
+                    <Microsoft.AspNetCore.Components.Forms.InputNumber @bind-Value="Course.Credits" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
+                    <ValidationMessage For="() => Course.Credits" style="color: #ff4d4f;" />
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label>课程描述:</label>
+                    <InputText @bind-Value="Course.Description" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;" />
+                    <ValidationMessage For="() => Course.Description" style="color: #ff4d4f;" />
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label>课程状态:</label>
+                    <InputSelect @bind-Value="Course.CourseStatus" style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px;">
+                        <option value="@CourseStatus.未开课">未开课</option>
+                        <option value="@CourseStatus.正在进行">正在进行</option>
+                        <option value="@CourseStatus.已结束">已结束</option>
+                    </InputSelect>
+                    <ValidationMessage For="() => Course.CourseStatus" style="color: #ff4d4f;" />
+                </div>
+                <div style="margin-bottom: 16px; display: flex; gap: 8px;">
+                    <AntDesign.Button Type="@AntDesign.ButtonType.Primary" HtmlType="submit" Loading="@isSubmitting">
+                        @if (isSubmitting)
+                        {
+                            <span>创建中...</span>
+                        }
+                        else
+                        {
+                            <span>创建</span>
+                        }
+                    </AntDesign.Button>
+                    <AntDesign.Button style="margin-left: 8px;" OnClick="@(() => NavigationManager.NavigateTo("/admin-courses"))">取消</AntDesign.Button>
+                </div>
+            </EditForm>
+        </AntDesign.Card>
+    </AntDesign.Col>
+</AntDesign.Row>
+
+<div style="margin-top: 16px;">
+                <AntDesign.Button OnClick="@(() => NavigationManager.NavigateTo("/admin-courses"))">返回列表</AntDesign.Button>
+</div>
+
+@code {
+    [Inject]
+    public IJSRuntime JSRuntime { get; set; } = default!;
+    private string currentUser = string.Empty;
+    private bool isSubmitting = false;
+    private string generatedCID = "系统将自动生成";
+
+    [SupplyParameterFromForm]
+    public Course Course { get; set; } = new() { CourseStatus = CourseStatus.未开课 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        // 预览下一个课程编号
+        var maxCID = await DB.SMS_Courses.AnyAsync() 
+            ? await DB.SMS_Courses.MaxAsync(c => c.CID) 
+            : 0;
+        generatedCID = $"C{(maxCID + 1):D6}"; // 格式：C000001
+    }
+
+    // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
+    public async Task AddCourse()
+    {
+        isSubmitting = true;
+        StateHasChanged();
+        
+        try
+        {
+            // 自动生成课程编号
+            var maxCID = await DB.SMS_Courses.AnyAsync() 
+                ? await DB.SMS_Courses.MaxAsync(c => c.CID) 
+                : 0;
+            Course.CID = maxCID + 1;
+
+            currentUser = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "currentUser") ?? string.Empty;
+            if (!string.IsNullOrEmpty(currentUser))
+            {
+                Course.CreateUser = currentUser;
+                Course.UpdateUser = currentUser;
+            }
+            Course.CreateDate = DateTime.UtcNow;
+            Course.UpdateDate = DateTime.UtcNow;
+            DB.SMS_Courses.Add(Course);
+            await DB.SaveChangesAsync();
+            await JSRuntime.InvokeVoidAsync("alert", "创建成功！");
+            NavigationManager.NavigateTo("/admin-courses");
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"创建失败: {ex.Message}");
+        }
+        finally
+        {
+            isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+}

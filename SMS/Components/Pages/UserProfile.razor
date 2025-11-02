@@ -1,0 +1,233 @@
+@page "/user-profile"
+@using SMS.Models
+@using Microsoft.EntityFrameworkCore
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject IDbContextFactory<SMS.CimContext> DbFactory
+@rendermode InteractiveServer
+
+<PageTitle>个人信息 - SMS平台</PageTitle>
+
+@if (isLoading)
+{
+    <div style="display: flex; justify-content: center; align-items: center; height: 400px;">
+        <AntDesign.Spin Size="@AntDesign.SpinSize.Large" />
+        <span style="margin-left: 16px; color: #666;">正在加载数据...</span>
+    </div>
+}
+else if (isAuthenticated)
+{
+    <!-- 页面标题 -->
+    <div style="margin-bottom: 24px;">
+        <h2 style="margin: 0; color: #1f2937; font-weight: 600;">个人信息</h2>
+        <p style="margin: 8px 0 0; color: #6b7280;">查看和管理您的个人信息</p>
+    </div>
+
+    <AntDesign.Row Gutter="24">
+        <!-- 用户基本信息 -->
+        <AntDesign.Col Xs="24" Md="12">
+            <AntDesign.Card Title="用户基本信息" Style="margin-bottom: 24px;">
+                <Body>
+                    <div style="margin-bottom: 16px;">
+                        <label style="font-weight: 500; color: #374151;">用户名：</label>
+                        <span style="margin-left: 8px;">@(currentUser?.Username ?? "-")</span>
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="font-weight: 500; color: #374151;">邮箱：</label>
+                        <span style="margin-left: 8px;">@(currentUser?.Email ?? "-")</span>
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="font-weight: 500; color: #374151;">角色：</label>
+                        <AntDesign.Tag Color="@GetRoleColor(currentUser?.Role ?? UserRole.学生)" style="margin-left: 8px;">
+                            @GetRoleName(currentUser?.Role ?? UserRole.学生)
+                        </AntDesign.Tag>
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="font-weight: 500; color: #374151;">注册时间：</label>
+                        <span style="margin-left: 8px;">@(currentUser?.CreateDate != null ? currentUser.CreateDate.ToString("yyyy-MM-dd HH:mm:ss") : "-")</span>
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="font-weight: 500; color: #374151;">最后更新：</label>
+                        <span style="margin-left: 8px;">@(currentUser?.UpdateDate != null ? currentUser.UpdateDate.ToString("yyyy-MM-dd HH:mm:ss") : "-")</span>
+                    </div>
+                </Body>
+            </AntDesign.Card>
+        </AntDesign.Col>
+
+        <!-- 关联信息 -->
+        <AntDesign.Col Xs="24" Md="12">
+            @if (currentUser?.Role == UserRole.学生 && currentUser?.Student != null)
+            {
+                <AntDesign.Card Title="学生信息" Style="margin-bottom: 24px;">
+                    <Body>
+                        <div style="margin-bottom: 16px;">
+                            <label style="font-weight: 500; color: #374151;">学号：</label>
+                            <span style="margin-left: 8px;">@(currentUser?.Student?.SID != null ? currentUser.Student.SID.ToString() : "-")</span>
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <label style="font-weight: 500; color: #374151;">姓名：</label>
+                            <span style="margin-left: 8px;">@(currentUser?.Student?.Name ?? "-")</span>
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <label style="font-weight: 500; color: #374151;">年龄：</label>
+                            <span style="margin-left: 8px;">@(currentUser?.Student?.Age != null ? currentUser.Student.Age.ToString() : "-") 岁</span>
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <label style="font-weight: 500; color: #374151;">专业：</label>
+                            <span style="margin-left: 8px;">@(currentUser?.Student?.Major ?? "-")</span>
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <label style="font-weight: 500; color: #374151;">邮箱：</label>
+                            <span style="margin-left: 8px;">@(currentUser?.Student?.Email ?? "-")</span>
+                        </div>
+                    </Body>
+                </AntDesign.Card>
+            }
+            else if (currentUser?.Role == UserRole.老师 && currentUser?.Teacher != null)
+            {
+                <AntDesign.Card Title="教师信息" Style="margin-bottom: 24px;">
+                    <Body>
+                        <div style="margin-bottom: 16px;">
+                            <label style="font-weight: 500; color: #374151;">工号：</label>
+                            <span style="margin-left: 8px;">@(currentUser?.Teacher?.TID != null ? currentUser.Teacher.TID.ToString() : "-")</span>
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <label style="font-weight: 500; color: #374151;">姓名：</label>
+                            <span style="margin-left: 8px;">@(currentUser?.Teacher?.Name ?? "-")</span>
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <label style="font-weight: 500; color: #374151;">年龄：</label>
+                            <span style="margin-left: 8px;">@(currentUser?.Teacher?.Age != null ? currentUser.Teacher.Age.ToString() : "-") 岁</span>
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <label style="font-weight: 500; color: #374151;">专业：</label>
+                            <span style="margin-left: 8px;">@(currentUser?.Teacher?.Major ?? "-")</span>
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <label style="font-weight: 500; color: #374151;">邮箱：</label>
+                            <span style="margin-left: 8px;">@(currentUser?.Teacher?.Email ?? "-")</span>
+                        </div>
+                    </Body>
+                </AntDesign.Card>
+            }
+            else if (currentUser?.Role == UserRole.管理员)
+            {
+                <AntDesign.Card Title="管理员信息" Style="margin-bottom: 24px;">
+                    <Body>
+                        <div style="text-align: center; padding: 20px;">
+                            <AntDesign.Icon Type="crown" Theme="@AntDesign.IconThemeType.Outline" 
+                                           style="font-size: 48px; color: #f59e0b; margin-bottom: 16px;" />
+                            <p style="color: #6b7280; margin: 0;">您拥有系统管理权限</p>
+                        </div>
+                    </Body>
+                </AntDesign.Card>
+            }
+        </AntDesign.Col>
+    </AntDesign.Row>
+
+    <!-- 操作按钮 -->
+    <div style="margin-top: 24px; text-align: center;">
+        <AntDesign.Button Type="@AntDesign.ButtonType.Primary" 
+                         OnClick="@(() => NavigationManager.NavigateTo("/forgot-password"))"
+                         Style="margin-right: 16px;">
+            修改密码
+        </AntDesign.Button>
+        <AntDesign.Button OnClick="@(() => NavigationManager.NavigateTo(GetHomePage()))">
+            返回首页
+        </AntDesign.Button>
+    </div>
+}
+@code {
+    private bool isLoading = true;
+    private bool isAuthenticated = false;
+    private User? currentUser;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await CheckAuthentication();
+            if (isAuthenticated)
+            {
+                await LoadUserInfo();
+            }
+            StateHasChanged();
+        }
+    }
+
+    private async Task CheckAuthentication()
+    {
+        try
+        {
+            var username = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "currentUser") ?? string.Empty;
+            var userRole = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userRole") ?? string.Empty;
+            
+            if (string.IsNullOrEmpty(username))
+            {
+                NavigationManager.NavigateTo("/login", forceLoad: true);
+                return;
+            }
+            
+            isAuthenticated = true;
+        }
+        catch (Exception)
+        {
+            NavigationManager.NavigateTo("/login", forceLoad: true);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadUserInfo()
+    {
+        try
+        {
+            var username = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "currentUser") ?? string.Empty;
+            
+            using var context = DbFactory.CreateDbContext();
+            currentUser = await context.SMS_Users
+                .Include(u => u.Student)
+                .Include(u => u.Teacher)
+                .FirstOrDefaultAsync(u => u.Username == username);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"加载用户信息失败: {ex.Message}");
+        }
+    }
+
+    private string GetRoleName(UserRole role)
+    {
+        return role switch
+        {
+            UserRole.学生 => "学生",
+            UserRole.老师 => "老师",
+            UserRole.管理员 => "管理员",
+            _ => "未知"
+        };
+    }
+
+    private string GetRoleColor(UserRole role)
+    {
+        return role switch
+        {
+            UserRole.学生 => "blue",
+            UserRole.老师 => "green",
+            UserRole.管理员 => "orange",
+            _ => "default"
+        };
+    }
+
+    private string GetHomePage()
+    {
+        return currentUser?.Role switch
+        {
+            UserRole.学生 => "/student-home",
+            UserRole.老师 => "/teacher-home",
+            UserRole.管理员 => "/admin-home",
+            _ => "/admin-home"
+        };
+    }
+}

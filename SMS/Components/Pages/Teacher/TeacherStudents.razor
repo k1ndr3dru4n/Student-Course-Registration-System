@@ -1,0 +1,157 @@
+@page "/teacher-pages/teacher-students"
+@using SMS.Models
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<SMS.CimContext> DbFactory
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+
+<PageTitle>教师学生管理 - 教师端</PageTitle>
+
+<div style="padding: 24px; max-width: 1100px; margin: auto;">
+    <h2 style="margin-bottom: 8px; color: #1f2937; font-weight: 600;">学生管理</h2>
+    <p style="color: #6b7280; margin-bottom: 24px;">查询和管理您所教课程的所有学生信息。</p>
+
+    <div style="margin-bottom: 16px; display: flex; gap: 12px; align-items: center;">
+        <input type="text"
+               @bind="studentSearchText"
+               placeholder="搜索学生姓名、学号..."
+               style="flex: 1; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px;" />
+        <button @onclick="SearchStudents"
+                style="padding: 8px 16px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            搜索
+        </button>
+        <button @onclick="ClearStudentSearch"
+                style="padding: 8px 16px; background: #f5f5f5; color: #666; border: 1px solid #d9d9d9; border-radius: 4px; cursor: pointer;">
+            清除
+        </button>
+    </div>
+
+    @if (isLoading)
+    {
+        <div style="text-align: center; padding: 40px; color: #666;">正在加载学生数据...</div>
+    }
+    else if (teacherStudents != null && teacherStudents.Any())
+    {
+        <div style="display: flex; flex-wrap: wrap; gap: 16px;">
+            @foreach (var student in teacherStudents)
+            {
+                <div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 2px 8px #f0f1f2; padding: 20px; width: 320px;">
+                    <div style="font-size: 18px; font-weight: 600; color: #1890ff; margin-bottom: 8px;">@student.Name</div>
+                    <div style="color: #666; margin-bottom: 4px;">学号：@student.SID</div>
+                    <div style="color: #666; margin-bottom: 4px;">专业：@student.Major</div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p style="color: #999; text-align: center; padding: 20px;">暂无学生信息</p>
+    }
+</div>
+
+@code {
+    private bool isLoading = true;
+    private List<Student> teacherStudents = new();
+    private string studentSearchText = string.Empty;
+    private string currentUser = string.Empty;
+    private CimContext? DB;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            DB = DbFactory.CreateDbContext();
+            currentUser = await GetCurrentUser();
+            await LoadTeacherStudents();
+            StateHasChanged();
+        }
+    }
+
+    private async Task<string> GetCurrentUser()
+    {
+    var user = await JS.InvokeAsync<string>("localStorage.getItem", "currentUser");
+        return user ?? string.Empty;
+    }
+
+    private async Task LoadTeacherStudents()
+    {
+        isLoading = true;
+        StateHasChanged();
+        if (DB == null || string.IsNullOrEmpty(currentUser))
+        {
+            teacherStudents = new();
+            isLoading = false;
+            return;
+        }
+        // 先通过用户名查找User记录，然后通过TeacherId关联到Teacher表
+        var user = await DB.SMS_Users.FirstOrDefaultAsync(u => u.Username == currentUser);
+        if (user == null || user.TeacherId == null)
+        {
+            teacherStudents = new();
+            isLoading = false;
+            return;
+        }
+        
+        var teacher = await DB.SMS_Teachers.FirstOrDefaultAsync(t => t.Id == user.TeacherId);
+        if (teacher == null)
+        {
+            teacherStudents = new();
+            isLoading = false;
+            return;
+        }
+        var courseIds = await DB.SMS_Courses.Where(c => c.TeacherId == teacher.TID).Select(c => c.CID).ToListAsync();
+        var enrollments = await DB.SMS_Enrollments.Include(e => e.Student).Where(e => courseIds.Contains(e.CourseCID)).ToListAsync();
+        teacherStudents = enrollments.Select(e => e.Student)
+            .Where(s => s != null)
+            .DistinctBy(s => s!.SID)
+            .Select(s => s!)
+            .ToList();
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task SearchStudents()
+    {
+        if (string.IsNullOrWhiteSpace(studentSearchText))
+        {
+            await LoadTeacherStudents();
+        }
+        else
+        {
+            if (DB == null || string.IsNullOrEmpty(currentUser))
+            {
+                teacherStudents = new();
+                return;
+            }
+            // 先通过用户名查找User记录，然后通过TeacherId关联到Teacher表
+            var user = await DB.SMS_Users.FirstOrDefaultAsync(u => u.Username == currentUser);
+            if (user == null || user.TeacherId == null)
+            {
+                teacherStudents = new();
+                return;
+            }
+            
+            var teacher = await DB.SMS_Teachers.FirstOrDefaultAsync(t => t.Id == user.TeacherId);
+            if (teacher == null)
+            {
+                teacherStudents = new();
+                return;
+            }
+            var courseIds = await DB.SMS_Courses.Where(c => c.TeacherId == teacher.TID).Select(c => c.CID).ToListAsync();
+            var enrollments = await DB.SMS_Enrollments.Include(e => e.Student).Where(e => courseIds.Contains(e.CourseCID)).ToListAsync();
+            teacherStudents = enrollments.Select(e => e.Student)
+                .Where(s => s != null && (s.Name != null && s.Name.Contains(studentSearchText) || s.SID.ToString().Contains(studentSearchText)))
+                .DistinctBy(s => s!.SID)
+                .Select(s => s!)
+                .ToList();
+        }
+        StateHasChanged();
+    }
+
+    private async Task ClearStudentSearch()
+    {
+        studentSearchText = string.Empty;
+        await LoadTeacherStudents();
+    }
+}

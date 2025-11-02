@@ -23,6 +23,8 @@ public class Teacher
     public string? CreateUser { get; set; }
     public string? UpdateUser { get; set; }
 
+    public string? Username { get; set; } // 新增字段
+
     // 导航属性
     /// <summary>
     /// 该教师授课的所有课程

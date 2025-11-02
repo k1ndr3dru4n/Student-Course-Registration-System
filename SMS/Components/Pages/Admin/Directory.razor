@@ -1,0 +1,343 @@
+@page "/admin-directory"
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
+@using AntDesign
+@using Microsoft.AspNetCore.Components
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>管理员目录 - SMS平台</PageTitle>
+
+@if (isLoading)
+{
+    <div style="display: flex; justify-content: center; align-items: center; height: 400px;">
+        <AntDesign.Spin Size="@AntDesign.SpinSize.Large" />
+        <span style="margin-left: 16px; color: #666;">正在加载数据...</span>
+    </div>
+}
+else if (hasError)
+{
+    <div style="display: flex; justify-content: center; align-items: center; height: 400px;">
+        <div style="text-align: center;">
+            <AntDesign.Alert Type="@AntDesign.AlertType.Error" 
+                           Message="加载失败" 
+                           Description="@errorMessage" 
+                           ShowIcon="true" />
+            <AntDesign.Button Type="@AntDesign.ButtonType.Primary" 
+                            Style="margin-top: 16px;" 
+                            @onclick="() => NavigationManager.NavigateTo(NavigationManager.Uri, true)">
+                刷新页面
+            </AntDesign.Button>
+        </div>
+    </div>
+}
+else if (!isAuthenticated)
+{
+    <div style="display: flex; justify-content: center; align-items: center; height: 400px;">
+        <div style="text-align: center;">
+            <AntDesign.Alert Type="@AntDesign.AlertType.Error" 
+                           Message="认证失败" 
+                           Description="您没有权限访问此页面或登录已过期，正在跳转到登录页面..." 
+                           ShowIcon="true" />
+        </div>
+    </div>
+}
+else if (isAuthenticated)
+{
+    <style>
+        .management-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .management-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-title-link {
+            text-decoration: none !important;
+            color: #495057 !important;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        
+        .card-title-link:hover {
+            color: #007bff !important;
+        }
+        
+        .management-icon {
+            font-size: 2rem;
+            margin-right: 10px;
+        }
+        
+        .favorite-star {
+            font-size: 32px !important;
+            cursor: pointer;
+            transition: color 0.3s ease, transform 0.2s ease;
+            user-select: none;
+            margin-right: 10px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        
+        .favorite-star:hover {
+            transform: scale(1.1);
+        }
+        
+        .card-content {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        
+        .card-text-content {
+            display: flex;
+            align-items: center;
+        }
+    </style>
+
+    <AntDesign.Row Gutter="24" style="justify-content: center; margin-top: 30px;">
+        <AntDesign.Col Xs="24" Sm="12" Md="8">
+            <AntDesign.Card Hoverable="true" style="margin-bottom: 24px;">
+                <Body>
+                    <div style="display: flex; align-items: center;">
+                        <div class="favorite-star" id="star-students" @onclick="@((e) => ToggleFavorite("students"))" @onclick:preventDefault="true" @onclick:stopPropagation="true"
+                             style="color: @GetStarColor("students"); font-size: 32px; cursor: pointer; margin-right: 16px;"
+                             title="收藏">
+                            @GetStarIcon("students")
+                        </div>
+                        <a href="/admin-students" style="flex: 1; text-decoration: none; color: inherit;">
+                            <div style="display: flex; align-items: center;">
+                                <Icon Type="idcard" Theme="@IconThemeType.Outline" style="font-size: 2rem; margin-right: 12px; color: #1890ff;" />
+                                <h4 style="margin: 0;">学生管理</h4>
+                            </div>
+                        </a>
+                    </div>
+                </Body>
+            </AntDesign.Card>
+        </AntDesign.Col>
+        
+        <AntDesign.Col Xs="24" Sm="12" Md="8">
+            <AntDesign.Card Hoverable="true" style="margin-bottom: 24px;">
+                <Body>
+                    <div style="display: flex; align-items: center;">
+                        <div class="favorite-star" id="star-teachers" @onclick="@((e) => ToggleFavorite("teachers"))" @onclick:preventDefault="true" @onclick:stopPropagation="true"
+                             style="color: @GetStarColor("teachers"); font-size: 32px; cursor: pointer; margin-right: 16px;"
+                             title="收藏">
+                            @GetStarIcon("teachers")
+                        </div>
+                        <a href="/admin-teachers" style="flex: 1; text-decoration: none; color: inherit;">
+                            <div style="display: flex; align-items: center;">
+                                <Icon Type="read" Theme="@IconThemeType.Outline" style="font-size: 2rem; margin-right: 12px; color: #1890ff;" />
+                                <h4 style="margin: 0;">教师管理</h4>
+                            </div>
+                        </a>
+                    </div>
+                </Body>
+            </AntDesign.Card>
+        </AntDesign.Col>
+        
+        <AntDesign.Col Xs="24" Sm="12" Md="8">
+            <AntDesign.Card Hoverable="true" style="margin-bottom: 24px;">
+                <Body>
+                    <div style="display: flex; align-items: center;">
+                        <div class="favorite-star" id="star-courses" @onclick="@((e) => ToggleFavorite("courses"))" @onclick:preventDefault="true" @onclick:stopPropagation="true"
+                             style="color: @GetStarColor("courses"); font-size: 32px; cursor: pointer; margin-right: 16px;"
+                             title="收藏">
+                            @GetStarIcon("courses")
+                        </div>
+                        <a href="/admin-courses" style="flex: 1; text-decoration: none; color: inherit;">
+                            <div style="display: flex; align-items: center;">
+                                <Icon Type="book" Theme="@IconThemeType.Outline" style="font-size: 2rem; margin-right: 12px; color: #1890ff;" />
+                                <h4 style="margin: 0;">课程管理</h4>
+                            </div>
+                        </a>
+                    </div>
+                </Body>
+            </AntDesign.Card>
+        </AntDesign.Col>
+        
+        <AntDesign.Col Xs="24" Sm="12" Md="8">
+            <AntDesign.Card Hoverable="true" style="margin-bottom: 24px;">
+                <Body>
+                    <div style="display: flex; align-items: center;">
+                        <div class="favorite-star" id="star-enrollments" @onclick="@((e) => ToggleFavorite("enrollments"))" @onclick:preventDefault="true" @onclick:stopPropagation="true"
+                             style="color: @GetStarColor("enrollments"); font-size: 32px; cursor: pointer; margin-right: 16px;"
+                             title="收藏">
+                            @GetStarIcon("enrollments")
+                        </div>
+                        <a href="/admin-enrollment-management" style="flex: 1; text-decoration: none; color: inherit;">
+                            <div style="display: flex; align-items: center;">
+                                <Icon Type="team" Theme="@IconThemeType.Outline" style="font-size: 2rem; margin-right: 12px; color: #1890ff;" />
+                                <h4 style="margin: 0;">选课管理</h4>
+                            </div>
+                        </a>
+                    </div>
+                </Body>
+            </AntDesign.Card>
+        </AntDesign.Col>
+    </AntDesign.Row>
+}
+
+@code {
+    private bool isLoading = true;
+    private List<string> favorites = new List<string>();
+    private bool isInitialized = false;
+    private bool isAuthenticated = false;
+    private string currentUser = string.Empty;
+    private string userRole = string.Empty;
+    private bool hasError = false;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await CheckAuthentication();
+                if (isAuthenticated)
+                {
+                    await LoadFavorites();
+                }
+            }
+            catch (Exception ex)
+            {
+                hasError = true;
+                errorMessage = $"加载数据时出现错误: {ex.Message}";
+                Console.WriteLine($"页面加载异常: {ex.Message}");
+            }
+            finally
+            {
+                isLoading = false;
+                isInitialized = true;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task LoadPageData()
+    {
+        try
+        {
+            await CheckAuthentication();
+            if (isAuthenticated)
+            {
+                await LoadFavorites();
+            }
+        }
+        catch (Exception ex)
+        {
+            hasError = true;
+            errorMessage = $"加载数据时出现错误: {ex.Message}";
+            Console.WriteLine($"页面加载异常: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            isInitialized = true;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CheckAuthentication()
+    {
+        try
+        {
+            currentUser = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "currentUser") ?? string.Empty;
+            userRole = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userRole") ?? string.Empty;
+            
+            if (string.IsNullOrEmpty(currentUser))
+            {
+                isAuthenticated = false;
+                return;
+            }
+            
+            // 检查用户角色是否为管理员
+            if (userRole != "2")
+            {
+                isAuthenticated = false;
+                return;
+            }
+            
+            isAuthenticated = true;
+        }
+        catch (Exception ex)
+        {
+            // 记录异常信息以便调试
+            Console.WriteLine($"管理员认证异常: {ex.Message}");
+            isAuthenticated = false;
+        }
+    }
+
+    private async Task LoadFavorites()
+    {
+        try
+        {
+            var favoritesJson = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "favorites");
+            
+            if (string.IsNullOrEmpty(favoritesJson) || favoritesJson == "null" || favoritesJson == "undefined")
+            {
+                favorites = new List<string>();
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "favorites", "[]");
+            }
+            else
+            {
+                try
+                {
+                    favorites = System.Text.Json.JsonSerializer.Deserialize<List<string>>(favoritesJson) ?? new List<string>();
+                }
+                catch
+                {
+                    favorites = new List<string>();
+                    await JSRuntime.InvokeVoidAsync("localStorage.setItem", "favorites", "[]");
+                }
+            }
+        }
+        catch
+        {
+            favorites = new List<string>();
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "favorites", "[]");
+        }
+    }
+
+    private async Task ToggleFavorite(string item)
+    {
+        if (favorites.Contains(item))
+        {
+            favorites.Remove(item);
+        }
+        else
+        {
+            favorites.Add(item);
+        }
+
+        var favoritesJson = System.Text.Json.JsonSerializer.Serialize(favorites);
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", "favorites", favoritesJson);
+        
+        // 触发存储事件以通知收藏夹页面更新
+        await JSRuntime.InvokeVoidAsync("eval", $@"
+            window.dispatchEvent(new StorageEvent('storage', {{
+                key: 'favorites',
+                newValue: '{favoritesJson}'
+            }}));
+        ");
+        
+        StateHasChanged();
+    }
+
+    private string GetStarIcon(string item)
+    {
+        return favorites.Contains(item) ? "★" : "☆";
+    }
+
+    private string GetStarColor(string item)
+    {
+        return favorites.Contains(item) ? "#ffd700" : "#ddd";
+    }
+}

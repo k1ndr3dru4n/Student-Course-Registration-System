@@ -8,81 +8,192 @@
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
 
-<PageTitle>注册</PageTitle>
+<PageTitle>用户注册</PageTitle>
 
-<AntDesign.Row style="margin-top: 80px; justify-content: center;">
-    <AntDesign.Col Span="8">
-        <AntDesign.Card>
-            <TitleTemplate>
-                <h3 style="text-align: center; margin: 0;">注册</h3>
-            </TitleTemplate>
-            <Body>
-                @if (!string.IsNullOrEmpty(_errorMessage))
+<div style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; max-width: 500px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h2 style="color: #333; margin: 0; font-size: 28px; font-weight: 600;">用户注册</h2>
+            <p style="color: #666; margin: 8px 0 0; font-size: 14px;">创建您的账户</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div style="background: #fff2f0; border: 1px solid #ffccc7; color: #cf1322; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
+                @_errorMessage
+            </div>
+        }
+
+        <EditForm Model="@_registerModel" OnValidSubmit="OnFormFinish">
+            <DataAnnotationsValidator />
+
+            <!-- 用户名 -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">用户名</label>
+                <AntDesign.Input @bind-Value="_registerModel.Username" 
+                                 Placeholder="请输入用户名"
+                                 Style="width: 100%;"
+                                 AllowClear="true" />
+                @if (!string.IsNullOrEmpty(GetValidationError(nameof(_registerModel.Username))))
                 {
-                    <AntDesign.Alert Type="@AntDesign.AlertType.Error" Message="@_errorMessage" ShowIcon="true" style="margin-bottom: 16px;" />
+                    <div style="color: #cf1322; font-size: 12px; margin-top: 4px;">@GetValidationError(nameof(_registerModel.Username))</div>
                 }
-                
-                <AntDesign.Form Model="@_registerModel" Layout="@AntDesign.FormLayout.Vertical" OnFinish="OnFormFinish">
-                    <AntDesign.FormItem Label="用户名">
-                        <AntDesign.Input @bind-Value="@_registerModel.Username" />
-                        @if (!string.IsNullOrEmpty(GetValidationError(nameof(_registerModel.Username))))
-                        {
-                            <div style="color: #ff4d4f; font-size: 14px; margin-top: 4px;">@GetValidationError(nameof(_registerModel.Username))</div>
-                        }
-                    </AntDesign.FormItem>
+            </div>
 
-                    <AntDesign.FormItem Label="电子邮箱">
-                        <AntDesign.Input @bind-Value="@_registerModel.Email" Type="@AntDesign.InputType.Email" />
-                        @if (!string.IsNullOrEmpty(GetValidationError(nameof(_registerModel.Email))))
-                        {
-                            <div style="color: #ff4d4f; font-size: 14px; margin-top: 4px;">@GetValidationError(nameof(_registerModel.Email))</div>
-                        }
-                    </AntDesign.FormItem>
+            <!-- 邮箱 -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">邮箱</label>
+                <AntDesign.Input @bind-Value="_registerModel.Email" 
+                                 Placeholder="请输入邮箱"
+                                 Style="width: 100%;"
+                                 AllowClear="true" />
+                @if (!string.IsNullOrEmpty(GetValidationError(nameof(_registerModel.Email))))
+                {
+                    <div style="color: #cf1322; font-size: 12px; margin-top: 4px;">@GetValidationError(nameof(_registerModel.Email))</div>
+                }
+            </div>
 
-                    <AntDesign.FormItem Label="密码">
-                        <AntDesign.InputPassword @bind-Value="@_registerModel.Password" />
-                        @if (!string.IsNullOrEmpty(GetValidationError(nameof(_registerModel.Password))))
-                        {
-                            <div style="color: #ff4d4f; font-size: 14px; margin-top: 4px;">@GetValidationError(nameof(_registerModel.Password))</div>
-                        }
-                    </AntDesign.FormItem>
+            <!-- 密码 -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">密码</label>
+                <AntDesign.InputPassword @bind-Value="_registerModel.Password" 
+                                         Placeholder="请输入密码"
+                                         Style="width: 100%;" />
+                @if (!string.IsNullOrEmpty(GetValidationError(nameof(_registerModel.Password))))
+                {
+                    <div style="color: #cf1322; font-size: 12px; margin-top: 4px;">@GetValidationError(nameof(_registerModel.Password))</div>
+                }
+            </div>
 
-                    <AntDesign.FormItem Label="确认密码">
-                        <AntDesign.InputPassword @bind-Value="@_registerModel.ConfirmPassword" />
-                        @if (!string.IsNullOrEmpty(GetValidationError(nameof(_registerModel.ConfirmPassword))))
-                        {
-                            <div style="color: #ff4d4f; font-size: 14px; margin-top: 4px;">@GetValidationError(nameof(_registerModel.ConfirmPassword))</div>
-                        }
-                    </AntDesign.FormItem>
+            <!-- 确认密码 -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">确认密码</label>
+                <AntDesign.InputPassword @bind-Value="_registerModel.ConfirmPassword" 
+                                         Placeholder="请再次输入密码"
+                                         Style="width: 100%;" />
+                @if (!string.IsNullOrEmpty(GetValidationError(nameof(_registerModel.ConfirmPassword))))
+                {
+                    <div style="color: #cf1322; font-size: 12px; margin-top: 4px;">@GetValidationError(nameof(_registerModel.ConfirmPassword))</div>
+                }
+            </div>
 
-                    <AntDesign.FormItem>
-                        <AntDesign.Button Type="@AntDesign.ButtonType.Primary" HtmlType="submit" Block="true" Size="@AntDesign.ButtonSize.Large" Loading="@_isSubmitting">
-                            @if (_isSubmitting)
+            <!-- 用户角色选择 -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">用户角色</label>
+                <AntDesign.Select TItem="UserRole" TItemValue="UserRole" @bind-Value="_registerModel.Role" 
+                                  Style="width: 100%;" OnChange="OnRoleChanged">
+                    <AntDesign.SelectOption TItem="UserRole" TItemValue="UserRole" Value="@UserRole.学生" Label="学生" />
+                    <AntDesign.SelectOption TItem="UserRole" TItemValue="UserRole" Value="@UserRole.老师" Label="老师" />
+                    <AntDesign.SelectOption TItem="UserRole" TItemValue="UserRole" Value="@UserRole.管理员" Label="管理员" />
+                </AntDesign.Select>
+            </div>
+
+            <!-- 学生相关字段 -->
+            @if (_registerModel.Role == UserRole.学生)
+            {
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">学生信息</label>
+                    <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                        <AntDesign.Select TItem="int" TItemValue="int" @bind-Value="selectedStudentId" 
+                                          Style="flex: 1;" Placeholder="选择现有学生">
+                            <AntDesign.SelectOption TItem="int" TItemValue="int" Value="0" Label="创建新学生" />
+                            @foreach (var student in availableStudents)
                             {
-                                <span>注册中...</span>
+                                <AntDesign.SelectOption TItem="int" TItemValue="int" Value="@student.Id" Label="@($"{student.Name} (学号: {student.SID})")" />
                             }
-                            else
-                            {
-                                <span>注册</span>
-                            }
-                        </AntDesign.Button>
-                    </AntDesign.FormItem>
-                    
-                    <div style="text-align: center; margin-top: 16px;">
-                        <span>已有账号？ <a href="/login">立即登录</a></span>
+                        </AntDesign.Select>
                     </div>
-                </AntDesign.Form>
-            </Body>
-        </AntDesign.Card>
-    </AntDesign.Col>
-</AntDesign.Row>
+
+                    @if (selectedStudentId == 0)
+                    {
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">学生姓名</label>
+                                <AntDesign.Input @bind-Value="newStudentName" Placeholder="请输入学生姓名" />
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">年龄</label>
+                                <AntDesign.InputNumber @bind-Value="newStudentAge" Placeholder="请输入年龄" MinValue="1" MaxValue="100" />
+                            </div>
+                            <div style="grid-column: span 2;">
+                                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">专业</label>
+                                <AntDesign.Input @bind-Value="newStudentMajor" Placeholder="请输入专业" />
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- 教师相关字段 -->
+            @if (_registerModel.Role == UserRole.老师)
+            {
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">教师信息</label>
+                    <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                        <AntDesign.Select TItem="int" TItemValue="int" @bind-Value="selectedTeacherId" 
+                                          Style="flex: 1;" Placeholder="选择现有教师">
+                            <AntDesign.SelectOption TItem="int" TItemValue="int" Value="0" Label="创建新教师" />
+                            @foreach (var teacher in availableTeachers)
+                            {
+                                <AntDesign.SelectOption TItem="int" TItemValue="int" Value="@teacher.Id" Label="@($"{teacher.Name} (工号: {teacher.TID})")" />
+                            }
+                        </AntDesign.Select>
+                    </div>
+
+                    @if (selectedTeacherId == 0)
+                    {
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">教师姓名</label>
+                                <AntDesign.Input @bind-Value="newTeacherName" Placeholder="请输入教师姓名" />
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">年龄</label>
+                                <AntDesign.InputNumber @bind-Value="newTeacherAge" Placeholder="请输入年龄" MinValue="1" MaxValue="100" />
+                            </div>
+                            <div style="grid-column: span 2;">
+                                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">专业</label>
+                                <AntDesign.Input @bind-Value="newTeacherMajor" Placeholder="请输入专业" />
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- 注册按钮 -->
+            <AntDesign.Button Type="@AntDesign.ButtonType.Primary" 
+                             HtmlType="submit"
+                             Style="width: 100%; height: 44px; font-size: 16px;"
+                             Loading="_isSubmitting">
+                注册
+            </AntDesign.Button>
+        </EditForm>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <span style="color: #666;">已有账户？</span>
+            <a href="/login" style="color: #1890ff; text-decoration: none; margin-left: 4px;">立即登录</a>
+        </div>
+    </div>
+</div>
 
 @code {
     private string currentUser = string.Empty;
-    private RegisterModel _registerModel = new();
+    private RegisterModel _registerModel = new() { Role = UserRole.学生 };
     private string _errorMessage = string.Empty;
     private bool _isSubmitting;
     private Dictionary<string, string> _validationErrors = new();
+    private List<Student> availableStudents = new();
+    private int selectedStudentId = 0;
+    private string newStudentName = string.Empty;
+    private int newStudentAge = 18;
+    private string newStudentMajor = string.Empty;
+    private string newStudentEmail = string.Empty;
+    private List<Teacher> availableTeachers = new();
+    private int selectedTeacherId = 0;
+    private string newTeacherName = string.Empty;
+    private int newTeacherAge = 25;
+    private string newTeacherMajor = string.Empty;
+    private string newTeacherEmail = string.Empty;
 
     private string GetValidationError(string propertyName)
     {
@@ -92,47 +203,22 @@
     private bool ValidateModel()
     {
         _validationErrors.Clear();
-        
-        // 验证用户名
         if (string.IsNullOrWhiteSpace(_registerModel.Username))
-        {
             _validationErrors[nameof(_registerModel.Username)] = "请输入用户名";
-        }
         else if (_registerModel.Username.Length < 3 || _registerModel.Username.Length > 50)
-        {
             _validationErrors[nameof(_registerModel.Username)] = "用户名长度必须在3-50个字符之间";
-        }
-
-        // 验证邮箱
         if (string.IsNullOrWhiteSpace(_registerModel.Email))
-        {
             _validationErrors[nameof(_registerModel.Email)] = "请输入邮箱";
-        }
         else if (!IsValidEmail(_registerModel.Email))
-        {
             _validationErrors[nameof(_registerModel.Email)] = "请输入有效的邮箱地址";
-        }
-
-        // 验证密码
         if (string.IsNullOrWhiteSpace(_registerModel.Password))
-        {
             _validationErrors[nameof(_registerModel.Password)] = "请输入密码";
-        }
         else if (_registerModel.Password.Length < 6 || _registerModel.Password.Length > 100)
-        {
             _validationErrors[nameof(_registerModel.Password)] = "密码长度必须在6-100个字符之间";
-        }
-
-        // 验证确认密码
         if (string.IsNullOrWhiteSpace(_registerModel.ConfirmPassword))
-        {
             _validationErrors[nameof(_registerModel.ConfirmPassword)] = "请确认密码";
-        }
         else if (_registerModel.Password != _registerModel.ConfirmPassword)
-        {
             _validationErrors[nameof(_registerModel.ConfirmPassword)] = "两次输入的密码不一致";
-        }
-
         return _validationErrors.Count == 0;
     }
 
@@ -149,6 +235,62 @@
         }
     }
 
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAvailableStudents();
+        await LoadAvailableTeachers();
+    }
+
+    private async Task LoadAvailableStudents()
+    {
+        try
+        {
+            using var context = await DbContextFactory.CreateDbContextAsync();
+            availableStudents = await context.SMS_Students
+                .Where(s => !context.SMS_Users.Any(u => u.StudentId == s.Id))
+                .OrderBy(s => s.Name)
+                .ToListAsync();
+        }
+        catch
+        {
+            availableStudents = new List<Student>();
+        }
+    }
+
+    private async Task LoadAvailableTeachers()
+    {
+        try
+        {
+            using var context = await DbContextFactory.CreateDbContextAsync();
+            availableTeachers = await context.SMS_Teachers
+                .Where(t => !context.SMS_Users.Any(u => u.TeacherId == t.Id))
+                .OrderBy(t => t.Name)
+                .ToListAsync();
+        }
+        catch
+        {
+            availableTeachers = new List<Teacher>();
+        }
+    }
+
+    private async Task OnRoleChanged(UserRole newRole)
+    {
+        _registerModel.Role = newRole;
+        selectedStudentId = 0;
+        selectedTeacherId = 0;
+        newStudentName = string.Empty;
+        newStudentAge = 18;
+        newStudentMajor = string.Empty;
+        newStudentEmail = string.Empty;
+        newTeacherName = string.Empty;
+        newTeacherAge = 25;
+        newTeacherMajor = string.Empty;
+        newTeacherEmail = string.Empty;
+        await LoadAvailableStudents();
+        await LoadAvailableTeachers();
+        StateHasChanged();
+    }
+
     private async Task OnFormFinish()
     {
         await HandleSubmit();
@@ -156,17 +298,11 @@
 
     private async Task HandleSubmit()
     {
-        if (_isSubmitting) 
-        {
-            return;
-        }
-
-        try 
+        if (_isSubmitting) return;
+        try
         {
             _isSubmitting = true;
             StateHasChanged();
-
-            // 手动验证
             if (!ValidateModel())
             {
                 _errorMessage = "验证失败，请检查输入";
@@ -174,11 +310,8 @@
                 StateHasChanged();
                 return;
             }
-
             using var context = await DbContextFactory.CreateDbContextAsync();
             currentUser = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "currentUser") ?? string.Empty;
-
-            // 检查用户名是否已存在
             var existingUsername = await context.SMS_Users.AnyAsync(u => u.Username == _registerModel.Username);
             if (existingUsername)
             {
@@ -187,8 +320,6 @@
                 StateHasChanged();
                 return;
             }
-
-            // 检查邮箱是否已存在
             var existingEmail = await context.SMS_Users.AnyAsync(u => u.Email == _registerModel.Email);
             if (existingEmail)
             {
@@ -197,33 +328,106 @@
                 StateHasChanged();
                 return;
             }
-
-            // 创建新用户
+            Student? student = null;
+            if (_registerModel.Role == UserRole.学生)
+            {
+                if (selectedStudentId == 0)
+                {
+                    if (string.IsNullOrWhiteSpace(newStudentName))
+                    {
+                        _errorMessage = "请输入学生姓名";
+                        _isSubmitting = false;
+                        StateHasChanged();
+                        return;
+                    }
+                    student = new Student
+                    {
+                        Name = newStudentName,
+                        Age = newStudentAge,
+                        Major = newStudentMajor,
+                        Email = _registerModel.Email,
+                        SID = await GenerateStudentSID(context),
+                        CreateUser = string.IsNullOrEmpty(currentUser) ? _registerModel.Username : currentUser,
+                        UpdateUser = string.IsNullOrEmpty(currentUser) ? _registerModel.Username : currentUser
+                    };
+                    context.SMS_Students.Add(student);
+                }
+                else
+                {
+                    student = await context.SMS_Students.FindAsync(selectedStudentId);
+                    if (student == null)
+                    {
+                        _errorMessage = "选择的学生不存在";
+                        _isSubmitting = false;
+                        StateHasChanged();
+                        return;
+                    }
+                }
+            }
+            Teacher? teacher = null;
+            if (_registerModel.Role == UserRole.老师)
+            {
+                if (selectedTeacherId == 0)
+                {
+                    if (string.IsNullOrWhiteSpace(newTeacherName))
+                    {
+                        _errorMessage = "请输入教师姓名";
+                        _isSubmitting = false;
+                        StateHasChanged();
+                        return;
+                    }
+                    teacher = new Teacher
+                    {
+                        Name = newTeacherName,
+                        Age = newTeacherAge,
+                        Major = newTeacherMajor,
+                        Email = _registerModel.Email,
+                        TID = await GenerateTeacherTID(context),
+                        CreateUser = string.IsNullOrEmpty(currentUser) ? _registerModel.Username : currentUser,
+                        UpdateUser = string.IsNullOrEmpty(currentUser) ? _registerModel.Username : currentUser
+                    };
+                    context.SMS_Teachers.Add(teacher);
+                }
+                else
+                {
+                    teacher = await context.SMS_Teachers.FindAsync(selectedTeacherId);
+                    if (teacher == null)
+                    {
+                        _errorMessage = "选择的教师不存在";
+                        _isSubmitting = false;
+                        StateHasChanged();
+                        return;
+                    }
+                }
+            }
+            if (student != null && student.Id == 0)
+                await context.SaveChangesAsync();
+            if (teacher != null && teacher.Id == 0)
+                await context.SaveChangesAsync();
             var user = new User
             {
                 Username = _registerModel.Username,
                 Email = _registerModel.Email,
-                Password = BCrypt.Net.BCrypt.HashPassword(_registerModel.Password),
-                // 已删除的数据库字段
+                Password = _registerModel.Password,
+                Role = (UserRole)_registerModel.Role, // 强制为枚举类型，防止类型错误
+                StudentId = student?.Id,
+                TeacherId = teacher?.Id,
                 CreateUser = string.IsNullOrEmpty(currentUser) ? _registerModel.Username : currentUser,
                 UpdateUser = string.IsNullOrEmpty(currentUser) ? _registerModel.Username : currentUser
             };
-
             try
             {
                 context.SMS_Users.Add(user);
                 await context.SaveChangesAsync();
-                
-                // 注册成功后重定向到登录页面
+                // 注册成功后，写入 userRole 到 localStorage
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "userRole", ((int)_registerModel.Role).ToString());
                 NavigationManager.NavigateTo("/login", true);
             }
             catch (DbUpdateException ex)
             {
                 _errorMessage = $"注册失败: {ex.Message}";
                 if (ex.InnerException != null)
-                {
                     _errorMessage += $" 详细信息: {ex.InnerException.Message}";
-                }
             }
         }
         catch (Exception ex)
@@ -236,4 +440,18 @@
             StateHasChanged();
         }
     }
+
+    private async Task<int> GenerateStudentSID(CimContext context)
+    {
+        var maxSID = await context.SMS_Students.MaxAsync(s => (int?)s.SID) ?? 0;
+        return maxSID + 1;
+    }
+
+    private async Task<int> GenerateTeacherTID(CimContext context)
+    {
+        var maxTID = await context.SMS_Teachers.MaxAsync(t => (int?)t.TID) ?? 0;
+        return maxTID + 1;
+    }
+
+
 }

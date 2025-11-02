@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "A2/aOMS6qICvBjSAaVP2A7KdcaIcW5BXYXbUPdqUFb4=",
+  "Hash": "nKsOfE01o7cfZLOcZ1tQ/dLn3aIBedxphegzlN89ydQ=",
   "Source": "SMS",
   "BasePath": "_content/SMS",
   "Mode": "Default",
@@ -10,7 +10,7 @@
     {
       "Name": "SMS\\wwwroot",
       "Source": "SMS",
-      "ContentRoot": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.5\\SMS\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\wwwroot\\",
       "BasePath": "_content/SMS",
       "Pattern": "**"
     }
@@ -7161,10 +7161,10 @@
       "OriginalItemSpec": "C:\\Users\\ZH202508001\\.nuget\\packages\\microsoft.aspnetcore.components.quickgrid\\8.0.0\\staticwebassets\\QuickGrid.razor.js"
     },
     {
-      "Identity": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.5\\SMS\\obj\\Debug\\net8.0\\jsmodules\\jsmodules.build.manifest.json",
+      "Identity": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\obj\\Debug\\net8.0\\jsmodules\\jsmodules.build.manifest.json",
       "SourceId": "SMS",
       "SourceType": "Computed",
-      "ContentRoot": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.5\\SMS\\obj\\Debug\\net8.0\\jsmodules\\",
+      "ContentRoot": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\obj\\Debug\\net8.0\\jsmodules\\",
       "BasePath": "_content/SMS",
       "RelativePath": "SMS.modules.json",
       "AssetKind": "Build",
@@ -7180,10 +7180,10 @@
       "OriginalItemSpec": "obj\\Debug\\net8.0\\jsmodules\\jsmodules.build.manifest.json"
     },
     {
-      "Identity": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.5\\SMS\\obj\\Debug\\net8.0\\scopedcss\\bundle\\SMS.styles.css",
+      "Identity": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\obj\\Debug\\net8.0\\scopedcss\\bundle\\SMS.styles.css",
       "SourceId": "SMS",
       "SourceType": "Computed",
-      "ContentRoot": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.5\\SMS\\obj\\Debug\\net8.0\\scopedcss\\bundle\\",
+      "ContentRoot": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\obj\\Debug\\net8.0\\scopedcss\\bundle\\",
       "BasePath": "_content/SMS",
       "RelativePath": "SMS.styles.css",
       "AssetKind": "All",
@@ -7196,13 +7196,13 @@
       "AssetTraitValue": "ApplicationBundle",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.5\\SMS\\obj\\Debug\\net8.0\\scopedcss\\bundle\\SMS.styles.css"
+      "OriginalItemSpec": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\obj\\Debug\\net8.0\\scopedcss\\bundle\\SMS.styles.css"
     },
     {
-      "Identity": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.5\\SMS\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\SMS.bundle.scp.css",
+      "Identity": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\SMS.bundle.scp.css",
       "SourceId": "SMS",
       "SourceType": "Computed",
-      "ContentRoot": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.5\\SMS\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\",
+      "ContentRoot": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\",
       "BasePath": "_content/SMS",
       "RelativePath": "SMS.bundle.scp.css",
       "AssetKind": "All",
@@ -7215,13 +7215,13 @@
       "AssetTraitValue": "ProjectBundle",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.5\\SMS\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\SMS.bundle.scp.css"
+      "OriginalItemSpec": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\SMS.bundle.scp.css"
     },
     {
-      "Identity": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.5\\SMS\\wwwroot\\app.css",
+      "Identity": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\wwwroot\\app.css",
       "SourceId": "SMS",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.5\\SMS\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\wwwroot\\",
       "BasePath": "_content/SMS",
       "RelativePath": "app.css",
       "AssetKind": "All",
@@ -7237,10 +7237,10 @@
       "OriginalItemSpec": "wwwroot\\app.css"
     },
     {
-      "Identity": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.5\\SMS\\wwwroot\\favicon.png",
+      "Identity": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\wwwroot\\favicon.png",
       "SourceId": "SMS",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.5\\SMS\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\wwwroot\\",
       "BasePath": "_content/SMS",
       "RelativePath": "favicon.png",
       "AssetKind": "All",
@@ -7256,10 +7256,10 @@
       "OriginalItemSpec": "wwwroot\\favicon.png"
     },
     {
-      "Identity": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.5\\SMS\\wwwroot\\quickgrid-custom.css",
+      "Identity": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\wwwroot\\quickgrid-custom.css",
       "SourceId": "SMS",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.5\\SMS\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\wwwroot\\",
       "BasePath": "_content/SMS",
       "RelativePath": "quickgrid-custom.css",
       "AssetKind": "All",

@@ -1,0 +1,189 @@
+@page "/student-home"
+@using SMS.Models
+@using Microsoft.EntityFrameworkCore
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject IDbContextFactory<SMS.CimContext> DbFactory
+@rendermode InteractiveServer
+
+<PageTitle>主页 - 学生端</PageTitle>
+
+@if (isLoading)
+{
+    <div style="display: flex; justify-content: center; align-items: center; height: 400px; flex-direction:column;">
+        <AntDesign.Spin Size="@AntDesign.SpinSize.Large" />
+        <span style="margin-left: 16px; color: #666;">正在加载数据...</span>
+    </div>
+}
+else if (isAuthenticated)
+{
+    <!-- 欢迎横幅 -->
+    <div style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 32px; border-radius: 16px; margin-bottom: 32px; color: white;">
+        <h1 style="margin: 0 0 8px 0; font-size: 28px; font-weight: 600; color: white;">欢迎回来，@currentUser！</h1>
+    </div>
+
+    <!-- 个性化数据统计面板 -->
+    <div style="margin-bottom: 32px;">
+        <div class="intro-container" style="margin-bottom: 24px;">
+            <AntDesign.Typography>
+                <AntDesign.Title Level="4">欢迎使用学生管理系统！</AntDesign.Title>
+                <AntDesign.Paragraph>
+                    本页面为您展示个人数据统计，功能入口请前往左侧目录。
+                </AntDesign.Paragraph>
+            </AntDesign.Typography>
+        </div>
+
+        <h2 style="margin-bottom: 24px; color: #1f2937; font-weight: 600; font-size: 20px;">
+            <AntDesign.Icon Type="dashboard" style="margin-right: 8px; color: #1890ff;" />
+            我的数据概览
+        </h2>
+
+        <AntDesign.Row Gutter="24">
+            <AntDesign.Col Xs="24" Sm="12" Md="8">
+                <AntDesign.Card style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: none;">
+                    <Body>
+                        <div style="padding: 24px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">我的选课数量</div>
+                                    <div style="font-size: 32px; font-weight: 700; color: #1f2937;">@myEnrollmentCount</div>
+                                </div>
+                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                    <AntDesign.Icon Type="form" style="font-size: 24px; color: white;" />
+                                </div>
+                            </div>
+                        </div>
+                    </Body>
+                </AntDesign.Card>
+            </AntDesign.Col>
+            <AntDesign.Col Xs="24" Sm="12" Md="8">
+                <AntDesign.Card style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: none;">
+                    <Body>
+                        <div style="padding: 24px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">我的课程数量</div>
+                                    <div style="font-size: 32px; font-weight: 700; color: #1f2937;">@myCourseCount</div>
+                                </div>
+                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                    <AntDesign.Icon Type="book" style="font-size: 24px; color: white;" />
+                                </div>
+                            </div>
+                        </div>
+                    </Body>
+                </AntDesign.Card>
+            </AntDesign.Col>
+            <AntDesign.Col Xs="24" Sm="12" Md="8">
+                <AntDesign.Card style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: none;">
+                    <Body>
+                        <div style="padding: 24px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">我的成绩条数</div>
+                                    <div style="font-size: 32px; font-weight: 700; color: #1f2937;">@myGradeCount</div>
+                                </div>
+                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                    <AntDesign.Icon Type="solution" style="font-size: 24px; color: white;" />
+                                </div>
+                            </div>
+                        </div>
+                    </Body>
+                </AntDesign.Card>
+            </AntDesign.Col>
+        </AntDesign.Row>
+    </div>
+}
+
+@code {
+    // 统计数据
+    private int myEnrollmentCount = 0;
+    private int myCourseCount = 0;
+    private int myGradeCount = 0;
+    private bool isLoading = true;
+    private bool isAuthenticated = false;
+    private string currentUser = string.Empty;
+    private CimContext? DB;
+    // 调试信息
+    private string debugCurrentUser = "";
+    private string debugUserRole = "";
+    private string debugStep = "初始化";
+    private string debugError = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            debugStep = "OnAfterRenderAsync首次渲染";
+            try
+            {
+                DB = DbFactory.CreateDbContext();
+                debugStep = "DbFactory.CreateDbContext成功";
+            }
+            catch (Exception ex)
+            {
+                debugStep = $"DbFactory.CreateDbContext异常: {ex.Message}";
+                debugError = ex.ToString();
+            }
+            await CheckAuthentication();
+            await LoadStudentStats();
+            StateHasChanged();
+        }
+    }
+    private async Task LoadStudentStats()
+    {
+        try
+        {
+            if (DB == null || string.IsNullOrEmpty(currentUser)) return;
+            // 获取当前学生SID
+            var user = await DB.SMS_Users.FirstOrDefaultAsync(u => u.Username == currentUser);
+            if (user == null || user.StudentId == null) return;
+            var studentSID = await DB.SMS_Students.Where(s => s.Id == user.StudentId).Select(s => s.SID).FirstOrDefaultAsync();
+            // 我的选课数量
+            myEnrollmentCount = await DB.SMS_Enrollments.CountAsync(e => e.StudentSID == studentSID);
+            // 我的课程数量（去重）
+            myCourseCount = await DB.SMS_Enrollments.Where(e => e.StudentSID == studentSID).Select(e => e.CourseCID).Distinct().CountAsync();
+            // 我的成绩条数
+            myGradeCount = await DB.SMS_Enrollments.CountAsync(e => e.StudentSID == studentSID && e.Grade != null);
+        }
+        catch (Exception ex)
+        {
+            debugError = "统计数据加载异常: " + ex.Message;
+        }
+    }
+
+    private async Task CheckAuthentication()
+    {
+        try
+        {
+            debugStep = "开始鉴权";
+            currentUser = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "currentUser") ?? string.Empty;
+            var userRole = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userRole") ?? string.Empty;
+            debugCurrentUser = currentUser;
+            debugUserRole = userRole;
+            if (string.IsNullOrEmpty(currentUser))
+            {
+                debugStep = "currentUser为空，跳转登录页";
+                isLoading = false;
+                return;
+            }
+            // 检查用户角色是否为学生
+            if (userRole != "0") // 0 表示学生角色
+            {
+                debugStep = $"userRole={userRole}，不是学生，清除localStorage并跳转登录页";
+                isLoading = false;
+                await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "currentUser");
+                await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "userRole");
+                return;
+            }
+            debugStep = "鉴权通过，显示学生首页";
+            isAuthenticated = true;
+            isLoading = false;
+        }
+        catch (Exception ex)
+        {
+            debugStep = "CheckAuthentication异常";
+            debugError = ex.ToString();
+            isLoading = false;
+        }
+    }
+}

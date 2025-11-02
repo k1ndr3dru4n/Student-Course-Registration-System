@@ -1,13 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "n36CnKPkJgw=",
+  "dgSpecHash": "0ujq2eO4j/o=",
   "success": true,
-  "projectFilePath": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.5\\SMS\\SMS.csproj",
+  "projectFilePath": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\SMS.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\ZH202508001\\.nuget\\packages\\antdesign\\1.4.3\\antdesign.1.4.3.nupkg.sha512",
     "C:\\Users\\ZH202508001\\.nuget\\packages\\azure.core\\1.25.0\\azure.core.1.25.0.nupkg.sha512",
     "C:\\Users\\ZH202508001\\.nuget\\packages\\azure.identity\\1.7.0\\azure.identity.1.7.0.nupkg.sha512",
-    "C:\\Users\\ZH202508001\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\ZH202508001\\.nuget\\packages\\humanizer\\2.14.1\\humanizer.2.14.1.nupkg.sha512",
     "C:\\Users\\ZH202508001\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\ZH202508001\\.nuget\\packages\\humanizer.core.af\\2.14.1\\humanizer.core.af.2.14.1.nupkg.sha512",

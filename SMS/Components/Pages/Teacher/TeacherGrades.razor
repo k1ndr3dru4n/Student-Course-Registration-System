@@ -1,0 +1,245 @@
+@page "/teacher-pages/teacher-grades"
+@using SMS.Models
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<SMS.CimContext> DbFactory
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+
+<PageTitle>教师成绩管理 - 教师端</PageTitle>
+
+<div style="padding: 24px; max-width: 1100px; margin: auto;">
+    <h2 style="margin-bottom: 8px; color: #1f2937; font-weight: 600;">成绩管理</h2>
+    <p style="color: #6b7280; margin-bottom: 24px;">录入和管理您所负责课程的学生成绩。</p>
+
+    <div style="margin-bottom: 16px; display: flex; gap: 12px; align-items: center;">
+        <input type="text"
+               @bind="gradeSearchText"
+               placeholder="搜索课程名称、课程号等..."
+               style="flex: 1; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px;" />
+        <button @onclick="SearchGrades"
+                style="padding: 8px 16px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            搜索
+        </button>
+        <button @onclick="ClearGradeSearch"
+                style="padding: 8px 16px; background: #f5f5f5; color: #666; border: 1px solid #d9d9d9; border-radius: 4px; cursor: pointer;">
+            清除
+        </button>
+    </div>
+
+    <div style="margin-bottom: 16px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 500;">选择已结束课程:</label>
+        <select @bind="selectedCourseId" style="width: 300px; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+            <option value="0">请选择已结束的课程</option>
+            @foreach (var course in finishedCourses)
+            {
+                <option value="@course.CID">@course.Name (@course.CID)</option>
+            }
+        </select>
+    </div>
+
+    @if (isLoading)
+    {
+        <div style="text-align: center; padding: 40px; color: #666;">正在加载成绩数据...</div>
+    }
+    else if (selectedCourseId > 0 && courseEnrollments != null && courseEnrollments.Any())
+    {
+        <table style="width: 100%; border-collapse: collapse; margin-top: 16px; border: 1px solid #ddd;">
+            <thead style="background: #f5f5f5;">
+                <tr>
+                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">学生姓名</th>
+                    <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">学号</th>
+                    <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">选课状态</th>
+                    <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">当前成绩</th>
+                    <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">录入成绩</th>
+                    <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var enrollment in courseEnrollments)
+                {
+                    <tr>
+                        <td style="padding: 12px; border: 1px solid #ddd;">@(enrollment.Student?.Name ?? "未知学生")</td>
+                        <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">@enrollment.StudentSID</td>
+                        <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                            <span style="color: #52c41a; padding: 4px 8px; background: #f6ffed; border-radius: 4px;">已选课</span>
+                        </td>
+                        <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                            @if (enrollment.Grade.HasValue)
+                            {
+                                <span style="font-weight: 500; color: @GetGradeColor((int)enrollment.Grade.Value);">@enrollment.Grade.Value 分</span>
+                            }
+                            else
+                            {
+                                <span style="color: #999;">未录入</span>
+                            }
+                        </td>
+                        <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                            <input type="number" min="0" max="100" step="1"
+                                   @bind="gradeInputs[enrollment.Id]"
+                                   placeholder="0-100分"
+                                   style="width: 80px; padding: 4px 8px; border: 1px solid #d9d9d9; border-radius: 4px; text-align: center;" />
+                        </td>
+                        <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                            <button type="button" style="margin: 2px; background: #52c41a; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;"
+                                    @onclick="() => SaveGrade(enrollment.Id)">
+                                保存成绩
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else if (selectedCourseId > 0)
+    {
+        <p style="color: #999; text-align: center; padding: 20px;">该课程暂无有效的选课学生</p>
+    }
+    else
+    {
+        <p style="color: #999; text-align: center; padding: 20px;">暂无已结束的课程</p>
+    }
+</div>
+
+@code {
+    private bool isLoading = true;
+    private List<Course> finishedCourses = new();
+    private List<Enrollment> courseEnrollments = new();
+    private int selectedCourseId = 0;
+    private string gradeSearchText = string.Empty;
+    private Dictionary<int, decimal> gradeInputs = new();
+    private string currentUser = string.Empty;
+    private CimContext? DB;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            DB = DbFactory.CreateDbContext();
+            currentUser = await GetCurrentUser();
+            await LoadFinishedCourses();
+            StateHasChanged();
+        }
+    }
+
+    private async Task<string> GetCurrentUser()
+    {
+    var user = await JS.InvokeAsync<string>("localStorage.getItem", "currentUser");
+        return user ?? string.Empty;
+    }
+
+    private async Task LoadFinishedCourses()
+    {
+        isLoading = true;
+        StateHasChanged();
+        if (DB == null || string.IsNullOrEmpty(currentUser))
+        {
+            finishedCourses = new();
+            isLoading = false;
+            return;
+        }
+        // 先通过用户名查找User记录，然后通过TeacherId关联到Teacher表
+        var user = await DB.SMS_Users.FirstOrDefaultAsync(u => u.Username == currentUser);
+        if (user == null || user.TeacherId == null)
+        {
+            finishedCourses = new();
+            isLoading = false;
+            return;
+        }
+        
+        var teacher = await DB.SMS_Teachers.FirstOrDefaultAsync(t => t.Id == user.TeacherId);
+        if (teacher == null)
+        {
+            finishedCourses = new();
+            isLoading = false;
+            return;
+        }
+    finishedCourses = await DB.SMS_Courses.Where(c => c.TeacherId == teacher.TID && c.CourseStatus == CourseStatus.已结束).ToListAsync();
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task SearchGrades()
+    {
+        if (string.IsNullOrWhiteSpace(gradeSearchText))
+        {
+            await LoadFinishedCourses();
+        }
+        else
+        {
+            if (DB == null || string.IsNullOrEmpty(currentUser))
+            {
+                finishedCourses = new();
+                return;
+            }
+            // 先通过用户名查找User记录，然后通过TeacherId关联到Teacher表
+            var user = await DB.SMS_Users.FirstOrDefaultAsync(u => u.Username == currentUser);
+            if (user == null || user.TeacherId == null)
+            {
+                finishedCourses = new();
+                return;
+            }
+            
+            var teacher = await DB.SMS_Teachers.FirstOrDefaultAsync(t => t.Id == user.TeacherId);
+            if (teacher == null)
+            {
+                finishedCourses = new();
+                return;
+            }
+            finishedCourses = await DB.SMS_Courses.Where(c => c != null && c.TeacherId == teacher.TID && c.CourseStatus == CourseStatus.已结束 && ((c.Name != null && c.Name.Contains(gradeSearchText)) || (c.CID.ToString().Contains(gradeSearchText)))).ToListAsync();
+            if (finishedCourses == null)
+                finishedCourses = new();
+        }
+        StateHasChanged();
+    }
+
+    private async Task ClearGradeSearch()
+    {
+        gradeSearchText = string.Empty;
+        await LoadFinishedCourses();
+    }
+
+    private async Task OnCourseChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int cid))
+        {
+            selectedCourseId = cid;
+            await LoadCourseEnrollments();
+        }
+    }
+
+    private async Task LoadCourseEnrollments()
+    {
+        if (DB == null || selectedCourseId == 0)
+        {
+            courseEnrollments = new();
+            return;
+        }
+        courseEnrollments = await DB.SMS_Enrollments.Include(e => e.Student).Where(e => e.CourseCID == selectedCourseId).ToListAsync();
+        if (courseEnrollments == null)
+            courseEnrollments = new();
+        gradeInputs = courseEnrollments.ToDictionary(e => e.Id, e => e.Grade ?? 0m);
+        StateHasChanged();
+    }
+
+    private async Task SaveGrade(int enrollmentId)
+    {
+        if (DB == null) return;
+        var enrollment = await DB.SMS_Enrollments.FirstOrDefaultAsync(e => e.Id == enrollmentId);
+        if (enrollment == null) return;
+        if (gradeInputs.TryGetValue(enrollmentId, out decimal grade))
+        {
+            enrollment.Grade = grade;
+            DB.SMS_Enrollments.Update(enrollment);
+            await DB.SaveChangesAsync();
+            await LoadCourseEnrollments();
+        }
+    }
+
+    private string GetGradeColor(int grade)
+    {
+        if (grade >= 60) return "#22c55e";
+        if (grade >= 40) return "#faad14";
+        return "#ef4444";
+    }
+}

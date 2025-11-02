@@ -154,7 +154,7 @@
             // 根据用户名查找用户
             var user = await context_db.SMS_Users.FirstOrDefaultAsync(u => u.Username == loginModel.Username);
 
-            if (user != null && BCrypt.Net.BCrypt.Verify(loginModel.Password, user.Password))
+            if (user != null && loginModel.Password == user.Password)
             {
                 // 更新最后登录时间和审计字段 (使用UTC时间)
                 // 已删除的数据库字段
@@ -163,9 +163,18 @@
                 
                 // 保存用户信息到本地存储
                 await JSRuntime.InvokeVoidAsync("localStorage.setItem", "currentUser", user.Username);
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "userRole", ((int)user.Role).ToString());
                 
-                // 跳转到首页
-                NavigationManager.NavigateTo("/home", forceLoad: true);
+                // 根据角色跳转到不同的首页
+                var targetPage = user.Role switch
+                {
+                    UserRole.学生 => "/student-home",
+                    UserRole.老师 => "/teacher-home",
+                    UserRole.管理员 => "/admin-home",
+                    _ => "/student-home" // 默认跳转到学生首页
+                };
+                
+                NavigationManager.NavigateTo(targetPage, forceLoad: false);
             }
             else
             {

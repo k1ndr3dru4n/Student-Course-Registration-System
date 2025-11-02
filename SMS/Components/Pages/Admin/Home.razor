@@ -1,0 +1,242 @@
+﻿@page "/admin-home"
+@using SMS.Models
+@using Microsoft.EntityFrameworkCore
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject IDbContextFactory<SMS.CimContext> DbFactory
+@rendermode InteractiveServer
+
+<PageTitle>主页 - SMS平台</PageTitle>
+
+@if (isLoading)
+{
+    <div style="display: flex; justify-content: center; align-items: center; height: 400px;">
+        <AntDesign.Spin Size="@AntDesign.SpinSize.Large" />
+        <span style="margin-left: 16px; color: #666;">正在加载数据...</span>
+    </div>
+}
+else if (!isAuthenticated)
+{
+    <div style="display: flex; justify-content: center; align-items: center; height: 400px;">
+        <div style="text-align: center;">
+            <AntDesign.Alert Type="@AntDesign.AlertType.Error" 
+                           Message="认证失败" 
+                           Description="您没有权限访问此页面或登录已过期，正在跳转到登录页面..." 
+                           ShowIcon="true" />
+        </div>
+    </div>
+}
+else if (!string.IsNullOrEmpty(lastExceptionMessage))
+{
+    <div style="display: flex; justify-content: center; align-items: center; height: 400px;">
+        <div style="text-align: center;">
+            <AntDesign.Alert Type="@AntDesign.AlertType.Error" 
+                           Message="加载数据时出现错误" 
+                           Description="@lastExceptionMessage" 
+                           ShowIcon="true" />
+        </div>
+    </div>
+}
+else if (isAuthenticated)
+{
+    <!-- 欢迎横幅 -->
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 32px; border-radius: 16px; margin-bottom: 32px; color: white;">
+    <h1 style="margin: 0 0 8px 0; font-size: 28px; font-weight: 600; color: white;">欢迎回来，@currentUser！</h1>
+    </div>
+
+
+    <!-- 数据统计面板 -->
+    <div style="margin-bottom: 32px;">
+        
+        <div class="intro-container" style="margin-bottom: 24px;">
+                <AntDesign.Typography>
+                    <AntDesign.Title Level="4">欢迎使用学生管理系统！</AntDesign.Title>
+                    <AntDesign.Paragraph>
+                        本系统集成了学生、教师、课程、选课、成绩等多项管理功能，支持数据统计、信息检索、权限管理等操作。用户可通过左侧导航栏快速访问各类管理页面，实现高效的教务管理与信息查询。
+                    </AntDesign.Paragraph>
+                </AntDesign.Typography>
+        </div>
+        
+        <h2 style="margin-bottom: 24px; color: #1f2937; font-weight: 600; font-size: 20px;">
+            <AntDesign.Icon Type="dashboard" style="margin-right: 8px; color: #1890ff;" />
+            系统数据概览
+        </h2>
+
+        <AntDesign.Row Gutter="24">
+            <!-- 学生统计 -->
+            <AntDesign.Col Xs="24" Sm="12" Md="6">
+                <AntDesign.Card style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: none;">
+                    <Body>
+                        <div style="padding: 24px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">学生总数</div>
+                                    <div style="font-size: 32px; font-weight: 700; color: #1f2937;">@studentCount</div>
+                                </div>
+                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                    <AntDesign.Icon Type="idcard" style="font-size: 24px; color: white;" />
+                                </div>
+                            </div>
+                        </div>
+                    </Body>
+                </AntDesign.Card>
+            </AntDesign.Col>
+
+            <!-- 教师统计 -->
+            <AntDesign.Col Xs="24" Sm="12" Md="6">
+                <AntDesign.Card style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: none;">
+                    <Body>
+                        <div style="padding: 24px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">教师总数</div>
+                                    <div style="font-size: 32px; font-weight: 700; color: #1f2937;">@teacherCount</div>
+                                </div>
+                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                    <AntDesign.Icon Type="read" style="font-size: 24px; color: white;" />
+                                </div>
+                            </div>
+                        </div>
+                    </Body>
+                </AntDesign.Card>
+            </AntDesign.Col>
+
+            <!-- 课程统计 -->
+            <AntDesign.Col Xs="24" Sm="12" Md="6">
+                <AntDesign.Card style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: none;">
+                    <Body>
+                        <div style="padding: 24px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">课程总数</div>
+                                    <div style="font-size: 32px; font-weight: 700; color: #1f2937;">@courseCount</div>
+                                </div>
+                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                    <AntDesign.Icon Type="book" style="font-size: 24px; color: white;" />
+                                </div>
+                            </div>
+                        </div>
+                    </Body>
+                </AntDesign.Card>
+            </AntDesign.Col>
+
+            <!-- 选课统计 -->
+            <AntDesign.Col Xs="24" Sm="12" Md="6">
+                <AntDesign.Card style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: none;">
+                    <Body>
+                        <div style="padding: 24px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">选课记录</div>
+                                    <div style="font-size: 32px; font-weight: 700; color: #1f2937;">@enrollmentCount</div>
+                                </div>
+                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                    <AntDesign.Icon Type="team" style="font-size: 24px; color: white;" />
+                                </div>
+                            </div>
+                        </div>
+                    </Body>
+                </AntDesign.Card>
+            </AntDesign.Col>
+        </AntDesign.Row>
+    </div>
+}
+
+@code {
+    private string lastExceptionMessage = "";
+    private string lastExceptionStack = "";
+    private bool isLoading = true;
+    private bool isAuthenticated = false;
+    private string currentUser = string.Empty;
+    private CimContext? DB;
+    // 统计数据
+    private int studentCount = 0;
+    private int teacherCount = 0;
+    private int courseCount = 0;
+    private int enrollmentCount = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            DB = DbFactory.CreateDbContext();
+            await CheckAuthentication();
+            if (isAuthenticated)
+            {
+                await LoadStatistics();
+            }
+            StateHasChanged();
+        }
+    }
+
+    private async Task CheckAuthentication()
+    {
+        try
+        {
+            currentUser = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "currentUser") ?? string.Empty;
+            var userRole = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userRole") ?? string.Empty;
+            
+            if (string.IsNullOrEmpty(currentUser))
+            {
+                // 未登录，重定向到登录页面
+                NavigationManager.NavigateTo("/login", forceLoad: true);
+                return;
+            }
+            
+            // 检查用户角色是否为管理员
+            if (userRole != "2") // 2 表示管理员角色
+            {
+                // 不是管理员角色，重定向到登录页面
+                await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "currentUser");
+                await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "userRole");
+                NavigationManager.NavigateTo("/login", forceLoad: true);
+                return;
+            }
+            
+            isAuthenticated = true;
+        }
+        catch (Exception ex)
+        {
+            // 记录异常信息
+            lastExceptionMessage = ex.Message;
+            lastExceptionStack = ex.StackTrace ?? "";
+            NavigationManager.NavigateTo("/login", forceLoad: true);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadStatistics()
+    {
+        try
+        {
+            if (DB == null)
+            {
+                lastExceptionMessage = "数据库上下文未初始化";
+                lastExceptionStack = "";
+                return;
+            }
+            
+            // 使用Entity Framework查询，更安全
+            studentCount = await DB.SMS_Students.CountAsync();
+            teacherCount = await DB.SMS_Teachers.CountAsync();
+            courseCount = await DB.SMS_Courses.CountAsync();
+            enrollmentCount = await DB.SMS_Enrollments.CountAsync();
+            
+            lastExceptionMessage = "";
+            lastExceptionStack = "";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            studentCount = 0;
+            teacherCount = 0;
+            courseCount = 0;
+            enrollmentCount = 0;
+            lastExceptionMessage = ex.Message;
+            lastExceptionStack = ex.StackTrace ?? "";
+        }
+    }
+}

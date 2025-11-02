@@ -94,8 +94,10 @@ namespace SMS.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<int>("StudentSID")
                         .HasColumnType("integer");
@@ -150,6 +152,9 @@ namespace SMS.Migrations
                     b.Property<string>("UpdateUser")
                         .HasColumnType("text");
 
+                    b.Property<string>("Username")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.ToTable("SMS_Students");
@@ -190,6 +195,9 @@ namespace SMS.Migrations
                     b.Property<string>("UpdateUser")
                         .HasColumnType("text");
 
+                    b.Property<string>("Username")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.ToTable("SMS_Teachers");
@@ -219,6 +227,15 @@ namespace SMS.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("StudentId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TeacherId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("UpdateDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -231,6 +248,10 @@ namespace SMS.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("TeacherId");
 
                     b.ToTable("SMS_Users");
                 });
@@ -263,6 +284,21 @@ namespace SMS.Migrations
                     b.Navigation("Course");
 
                     b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("SMS.Models.User", b =>
+                {
+                    b.HasOne("SMS.Models.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId");
+
+                    b.HasOne("SMS.Models.Teacher", "Teacher")
+                        .WithMany()
+                        .HasForeignKey("TeacherId");
+
+                    b.Navigation("Student");
+
+                    b.Navigation("Teacher");
                 });
 
             modelBuilder.Entity("SMS.Models.Course", b =>
