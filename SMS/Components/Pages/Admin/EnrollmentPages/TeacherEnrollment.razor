@@ -30,37 +30,67 @@
 
     <!-- 教师选择 -->
     <div style="margin-bottom: 24px; padding: 16px; border: 1px solid #f0f0f0; border-radius: 6px;">
-        <h3>选择教师</h3>
-        <div style="display: flex; gap: 16px; align-items: center;">
-            <select @bind="selectedTeacherTID" style="padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px; min-width: 200px;">
-                <option value="0">请选择教师</option>
-                @if (teachers != null)
+        <h3>搜索并选择教师</h3>
+        <div style="display: flex; gap: 16px; align-items: center; position: relative;">
+            <div style="flex: 1; position: relative;">
+                <input type="text" 
+                       @bind="teacherSearchText" 
+                       @oninput="OnTeacherSearchTextChanged"
+                       @onfocus="ShowTeacherSearchResults"
+                       @onblur="@(async () => { await Task.Delay(200); showTeacherSearchResults = false; })"
+                       placeholder="输入教师姓名或工号进行搜索..." 
+                       style="width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px;" />
+                
+                @if (showTeacherSearchResults && filteredTeachers != null && filteredTeachers.Any())
                 {
-                    @foreach (var teacher in teachers)
-                    {
-                        <option value="@teacher.TID">@teacher.Name (工号: @teacher.TID)</option>
-                    }
+                    <div style="position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #d9d9d9; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-height: 200px; overflow-y: auto; z-index: 1000;">
+                        @foreach (var teacher in filteredTeachers.Take(10))
+                        {
+                            <div @onclick="() => SelectTeacher(teacher)" 
+                                 style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0;"
+                                 onmouseover="this.style.backgroundColor='#f5f5f5'" 
+                                 onmouseout="this.style.backgroundColor='white'">
+                                <div style="font-weight: 500;">@teacher.Name</div>
+                                <div style="font-size: 12px; color: #666;">工号: @teacher.TID | 专业: @teacher.Major</div>
+                            </div>
+                        }
+                    </div>
                 }
-            </select>
+            </div>
+            
+            @if (selectedTeacher != null)
+            {
+                <div style="padding: 8px 12px; background: #e6f7ff; border: 1px solid #91d5ff; border-radius: 4px; display: flex; align-items: center; gap: 8px;">
+                    <span>已选择: @selectedTeacher.Name (工号: @selectedTeacher.TID)</span>
+                    <button @onclick="ClearSelectedTeacher" 
+                            style="background: none; border: none; color: #1890ff; cursor: pointer; padding: 2px;">
+                        ✕
+                    </button>
+                </div>
+            }
         </div>
     </div>
 
-    @if (selectedTeacherTID > 0)
+    @if (selectedTeacher != null)
     {
         <!-- 标签页 -->
         <div style="border-bottom: 1px solid #f0f0f0; margin-bottom: 24px;">
             <div style="display: flex; gap: 0;">
-                <button @onclick="() => activeTab = 0" 
+                <button @onclick="() => SwitchTab(0)" 
                         style="padding: 12px 24px; border: none; border-bottom: 2px solid @(activeTab == 0 ? "#1890ff" : "transparent"); background: transparent; cursor: pointer; font-weight: @(activeTab == 0 ? "600" : "normal"); color: @(activeTab == 0 ? "#1890ff" : "#666");">
                     课程管理
                 </button>
-                <button @onclick="() => activeTab = 1" 
+                <button @onclick="() => SwitchTab(1)" 
                         style="padding: 12px 24px; border: none; border-bottom: 2px solid @(activeTab == 1 ? "#1890ff" : "transparent"); background: transparent; cursor: pointer; font-weight: @(activeTab == 1 ? "600" : "normal"); color: @(activeTab == 1 ? "#1890ff" : "#666");">
                     选择课程
                 </button>
-                <button @onclick="() => activeTab = 2" 
+                <button @onclick="() => SwitchTab(2)" 
                         style="padding: 12px 24px; border: none; border-bottom: 2px solid @(activeTab == 2 ? "#1890ff" : "transparent"); background: transparent; cursor: pointer; font-weight: @(activeTab == 2 ? "600" : "normal"); color: @(activeTab == 2 ? "#1890ff" : "#666");">
                     成绩管理
+                </button>
+                <button @onclick="() => SwitchTab(3)" 
+                        style="padding: 12px 24px; border: none; border-bottom: 2px solid @(activeTab == 3 ? "#1890ff" : "transparent"); background: transparent; cursor: pointer; font-weight: @(activeTab == 3 ? "600" : "normal"); color: @(activeTab == 3 ? "#1890ff" : "#666");">
+                    教师申请审批
                 </button>
             </div>
         </div>
@@ -436,21 +466,197 @@
             </div>
         }
     }
+
+    <!-- 教师申请审批标签页 -->
+    @if (activeTab == 3)
+    {
+        <div style="border: 1px solid #f0f0f0; border-radius: 6px; padding: 16px;">
+            <!-- 统计卡片 -->
+            <div style="display: flex; gap: 16px; margin-bottom: 24px;">
+                <AntDesign.Card style="flex: 1; text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: #1890ff;">@pendingCount</div>
+                    <div style="color: #666;">待审批</div>
+                </AntDesign.Card>
+                <AntDesign.Card style="flex: 1; text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: #52c41a;">@approvedCount</div>
+                    <div style="color: #666;">已通过</div>
+                </AntDesign.Card>
+                <AntDesign.Card style="flex: 1; text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: #ff4d4f;">@rejectedCount</div>
+                    <div style="color: #666;">已拒绝</div>
+                </AntDesign.Card>
+            </div>
+
+            <!-- 筛选器 -->
+            <div style="margin-bottom: 16px; display: flex; gap: 16px; align-items: center;">
+                <div>
+                    <label style="margin-right: 8px;">状态筛选：</label>
+                    <select @onchange="OnStatusFilterChangedEvent" style="width: 150px; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                        <option value="">全部</option>
+                        <option value="@((int)ApplicationStatus.Pending)" selected="@(statusFilter == (int)ApplicationStatus.Pending)">待审批</option>
+                        <option value="@((int)ApplicationStatus.Approved)" selected="@(statusFilter == (int)ApplicationStatus.Approved)">已通过</option>
+                        <option value="@((int)ApplicationStatus.Rejected)" selected="@(statusFilter == (int)ApplicationStatus.Rejected)">已拒绝</option>
+                    </select>
+                </div>
+                <div>
+                    <AntDesign.Button Type="@AntDesign.ButtonType.Primary" @onclick="LoadApplications">
+                        刷新数据
+                    </AntDesign.Button>
+                </div>
+            </div>
+
+            <!-- 申请列表 -->
+            @if (applications == null)
+            {
+                <div style="text-align:center; color:#888; padding:32px;">正在加载申请数据...</div>
+            }
+            else if (!filteredApplications.Any())
+            {
+                <div style="text-align:center; color:#888; padding:32px;">暂无申请记录</div>
+            }
+            else
+            {
+                <div style="overflow-x: auto;">
+                    <table class="ant-table-tbody" style="width: 100%; border-collapse: collapse;">
+                        <thead style="background-color: #fafafa;">
+                            <tr>
+                                <th style="padding: 16px; border: 1px solid #f0f0f0; text-align: left; font-weight: 500;">申请教师</th>
+                                <th style="padding: 16px; border: 1px solid #f0f0f0; text-align: left; font-weight: 500;">课程名称</th>
+                                <th style="padding: 16px; border: 1px solid #f0f0f0; text-align: left; font-weight: 500;">课程号</th>
+                                <th style="padding: 16px; border: 1px solid #f0f0f0; text-align: left; font-weight: 500;">学分</th>
+                                <th style="padding: 16px; border: 1px solid #f0f0f0; text-align: left; font-weight: 500;">课程描述</th>
+                                <th style="padding: 16px; border: 1px solid #f0f0f0; text-align: left; font-weight: 500;">申请状态</th>
+                                <th style="padding: 16px; border: 1px solid #f0f0f0; text-align: left; font-weight: 500;">申请时间</th>
+                                <th style="padding: 16px; border: 1px solid #f0f0f0; text-align: center; font-weight: 500;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var application in filteredApplications)
+                            {
+                                <tr style="border-bottom: 1px solid #f0f0f0;">
+                                    <td style="padding: 16px; border: 1px solid #f0f0f0;">@(application.Teacher?.Name ?? "未知教师")</td>
+                                    <td style="padding: 16px; border: 1px solid #f0f0f0;">@application.Name</td>
+                                    <td style="padding: 16px; border: 1px solid #f0f0f0;">
+                                        @if (string.IsNullOrEmpty(application.CID))
+                                        {
+                                            <span style="color: #999; font-style: italic;">待分配</span>
+                                        }
+                                        else
+                                        {
+                                            @application.CID
+                                        }
+                                    </td>
+                                    <td style="padding: 16px; border: 1px solid #f0f0f0;">@application.Credits</td>
+                                    <td style="padding: 16px; border: 1px solid #f0f0f0; max-width: 200px; word-wrap: break-word;">
+                                        @(string.IsNullOrEmpty(application.Description) ? "-" : application.Description)
+                                    </td>
+                                    <td style="padding: 16px; border: 1px solid #f0f0f0;">
+                                        @switch (application.Status)
+                                        {
+                                            case ApplicationStatus.Pending:
+                                                <AntDesign.Tag Color="@("orange")">待审批</AntDesign.Tag>
+                                                break;
+                                            case ApplicationStatus.Approved:
+                                                <AntDesign.Tag Color="@("green")">已通过</AntDesign.Tag>
+                                                break;
+                                            case ApplicationStatus.Rejected:
+                                                <AntDesign.Tag Color="@("red")">已拒绝</AntDesign.Tag>
+                                                break;
+                                        }
+                                    </td>
+                                    <td style="padding: 16px; border: 1px solid #f0f0f0;">@application.CreateDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td style="padding: 16px; border: 1px solid #f0f0f0; text-align: center;">
+                                        @if (application.Status == ApplicationStatus.Pending)
+                                        {
+                                            <div style="display: flex; gap: 8px; justify-content: center;">
+                                                <AntDesign.Button Type="@AntDesign.ButtonType.Primary" @onclick="() => ShowApprovalModal(application, true)">
+                                                    通过
+                                                </AntDesign.Button>
+                                                <AntDesign.Button Type="@AntDesign.ButtonType.Default" Danger @onclick="() => ShowApprovalModal(application, false)">
+                                                    拒绝
+                                                </AntDesign.Button>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div style="color: #999;">已处理</div>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    }
 </div>
+
+<!-- 审批模态框 -->
+<AntDesign.Modal Title="@(isApproving ? "通过申请" : "拒绝申请")" 
+                @bind-Visible="approvalModalVisible" 
+                Width="500"
+                OnCancel="CloseApprovalModal"
+                Footer="null">
+    @if (currentApplication != null)
+    {
+        <div style="margin-bottom: 16px;">
+            <strong>申请信息：</strong>
+        </div>
+        <div style="background-color: #f5f5f5; padding: 16px; margin-bottom: 16px; border-radius: 4px;">
+            <p><strong>教师：</strong> @(currentApplication.Teacher?.Name ?? "未知教师")</p>
+            <p><strong>课程名称：</strong> @currentApplication.Name</p>
+            <p><strong>课程号：</strong> @currentApplication.CID</p>
+            <p><strong>学分：</strong> @currentApplication.Credits</p>
+            <p><strong>描述：</strong> @(string.IsNullOrEmpty(currentApplication.Description) ? "无" : currentApplication.Description)</p>
+        </div>
+
+        <EditForm Model="@approvalModel" OnValidSubmit="HandleApproval" FormName="approvalForm">
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 4px; font-weight: 500;">
+                    @(isApproving ? "通过" : "拒绝")理由：
+                </label>
+                <AntDesign.TextArea @bind-Value="approvalModel.Comment" 
+                                  Placeholder="@(isApproving ? "请输入通过理由（可选）" : "请输入拒绝理由")" 
+                                  Rows="3" />
+            </div>
+
+            <div style="text-align: right;">
+                <AntDesign.Button @onclick="CloseApprovalModal" style="margin-right: 8px;">
+                    取消
+                </AntDesign.Button>
+                <AntDesign.Button Type="@AntDesign.ButtonType.Primary" 
+                                HtmlType="submit" 
+                                Loading="isSubmitting"
+                                Danger="@(!isApproving)">
+                    确认@(isApproving ? "通过" : "拒绝")
+                </AntDesign.Button>
+            </div>
+        </EditForm>
+    }
+</AntDesign.Modal>
 
 @code {
     // 教师相关
     private List<Teacher>? teachers;
+    private Teacher? selectedTeacher;
     private int _selectedTeacherTID = 0;
     private List<Course>? teacherCourses;
     
+    // 教师搜索相关
+    private string teacherSearchText = "";
+    private List<Teacher>? filteredTeachers = new();
+    private bool showTeacherSearchResults = false;
+    
     private int selectedTeacherTID
     {
-        get => _selectedTeacherTID;
+        get => selectedTeacher?.TID ?? 0;
         set
         {
-            if (_selectedTeacherTID != value)
+            var teacher = teachers?.FirstOrDefault(t => t.TID == value);
+            if (selectedTeacher != teacher)
             {
+                selectedTeacher = teacher;
                 _selectedTeacherTID = value;
                 _ = OnTeacherChanged();
             }
@@ -458,7 +664,7 @@
     }
     
     // 标签页控制
-    private int activeTab = 0; // 0: 课程管理, 1: 选择课程, 2: 成绩管理
+    private int activeTab = 0; // 0: 课程管理, 1: 选择课程, 2: 成绩管理, 3: 教师申请审批
     
     // 可选课程
     private List<Course>? availableCourses;
@@ -468,6 +674,31 @@
     private List<Enrollment> courseEnrollments = new();
     private int selectedCourseForGrade = 0;
     private Dictionary<int, int> gradeInputs = new();
+
+    // 教师申请审批相关变量
+    private List<TeacherApplication> applications = new();
+    private List<TeacherApplication> filteredApplications = new();
+    
+    // 统计数据
+    private int pendingCount = 0;
+    private int approvedCount = 0;
+    private int rejectedCount = 0;
+    
+    // 筛选
+    private int? statusFilter = null;
+    
+    // 审批相关
+    private bool approvalModalVisible = false;
+    private bool isApproving = false;
+    private bool isSubmitting = false;
+    private TeacherApplication? currentApplication = null;
+    private ApprovalModel approvalModel = new();
+    
+    // 审批模型
+    public class ApprovalModel
+    {
+        public string Comment { get; set; } = "";
+    }
     
     // 课程管理排序相关
     private string courseManagementSortField = "Name";
@@ -497,12 +728,69 @@
     {
         await LoadTeachers();
         await LoadAvailableCourses();
+        await LoadApplications();
         StateHasChanged();
     }
     
     private async Task LoadTeachers()
     {
         teachers = await DB.SMS_Teachers.OrderBy(t => t.Name).ToListAsync();
+        StateHasChanged();
+    }
+    
+    // 教师搜索相关方法
+    private void OnTeacherSearchTextChanged(ChangeEventArgs e)
+    {
+        teacherSearchText = e.Value?.ToString() ?? "";
+        FilterTeachers();
+    }
+    
+    private void FilterTeachers()
+    {
+        if (string.IsNullOrWhiteSpace(teacherSearchText) || teachers == null)
+        {
+            filteredTeachers = new List<Teacher>();
+            showTeacherSearchResults = false;
+            return;
+        }
+        
+        var searchText = teacherSearchText.ToLower();
+        filteredTeachers = teachers.Where(t => 
+            (t.Name?.ToLower().Contains(searchText) ?? false) || 
+            t.TID.ToString().Contains(searchText) ||
+            (t.Major?.ToLower().Contains(searchText) ?? false)
+        ).Take(10).ToList();
+        
+        showTeacherSearchResults = filteredTeachers.Any();
+        StateHasChanged();
+    }
+    
+    private void ShowTeacherSearchResults()
+    {
+        if (!string.IsNullOrWhiteSpace(teacherSearchText) && filteredTeachers?.Any() == true)
+        {
+            showTeacherSearchResults = true;
+        }
+    }
+    
+    private async Task SelectTeacher(Teacher teacher)
+    {
+        selectedTeacher = teacher;
+        teacherSearchText = $"{teacher.Name} (工号: {teacher.TID})";
+        showTeacherSearchResults = false;
+        await OnTeacherChanged();
+        StateHasChanged();
+    }
+    
+    private void ClearSelectedTeacher()
+    {
+        selectedTeacher = null;
+        teacherSearchText = "";
+        filteredTeachers = new List<Teacher>();
+        showTeacherSearchResults = false;
+        teacherCourses = null;
+        availableCourses = null;
+        finishedCourses = null;
         StateHasChanged();
     }
 
@@ -976,6 +1264,7 @@
         if (selectedTeacherTID > 0)
         {
             await LoadTeacherData();
+            StateHasChanged();
         }
         else
         {
@@ -984,6 +1273,162 @@
             availableCourses = null;
             finishedCourses = null;
             StateHasChanged();
+        }
+    }
+
+    // 标签页切换方法
+    private void SwitchTab(int tabIndex)
+    {
+        activeTab = tabIndex;
+        StateHasChanged();
+    }
+
+    // 教师申请审批相关方法
+    private async Task LoadApplications()
+    {
+        try
+        {
+            // 加载所有申请记录，包含教师信息
+            applications = await DB.SMS_TeacherApplications
+                .Include(ta => ta.Teacher)
+                .OrderByDescending(ta => ta.CreateDate)
+                .ToListAsync();
+
+            // 统计各状态数量
+            pendingCount = applications.Count(a => a.Status == ApplicationStatus.Pending);
+            approvedCount = applications.Count(a => a.Status == ApplicationStatus.Approved);
+            rejectedCount = applications.Count(a => a.Status == ApplicationStatus.Rejected);
+
+            // 应用筛选
+            ApplyFilter();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"加载申请数据异常: {ex.Message}");
+            await JS.InvokeVoidAsync("alert", "加载申请数据失败: " + ex.Message);
+        }
+    }
+
+    private void ApplyFilter()
+    {
+        if (statusFilter == null)
+        {
+            filteredApplications = applications.ToList();
+        }
+        else
+        {
+            filteredApplications = applications.Where(a => (int)a.Status == statusFilter.Value).ToList();
+        }
+    }
+
+    private void OnStatusFilterChanged(int? value)
+    {
+        statusFilter = value;
+        ApplyFilter();
+        StateHasChanged();
+    }
+
+    private void OnStatusFilterChangedEvent(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString();
+        if (string.IsNullOrEmpty(value))
+        {
+            statusFilter = null;
+        }
+        else if (int.TryParse(value, out int result))
+        {
+            statusFilter = result;
+        }
+        ApplyFilter();
+        StateHasChanged();
+    }
+
+    private void ShowApprovalModal(TeacherApplication application, bool isApproval)
+    {
+        currentApplication = application;
+        isApproving = isApproval;
+        approvalModel = new ApprovalModel();
+        approvalModalVisible = true;
+    }
+
+    private void CloseApprovalModal()
+    {
+        approvalModalVisible = false;
+        currentApplication = null;
+        approvalModel = new ApprovalModel();
+    }
+
+    private async Task HandleApproval()
+    {
+        try
+        {
+            if (currentApplication == null)
+            {
+                await JS.InvokeVoidAsync("alert", "操作失败，请重新尝试");
+                return;
+            }
+
+            isSubmitting = true;
+
+            // 更新申请状态
+            currentApplication.Status = isApproving ? ApplicationStatus.Approved : ApplicationStatus.Rejected;
+            currentApplication.AdminComment = approvalModel.Comment;
+
+            // 如果通过申请，创建课程记录
+            if (isApproving)
+            {
+                // 使用与管理员课程创建相同的逻辑自动生成课程号
+                var maxCID = await DB.SMS_Courses.AnyAsync() 
+                    ? await DB.SMS_Courses.MaxAsync(c => c.CID) 
+                    : 0;
+                int nextCourseId = maxCID + 1;
+                
+                // 更新申请记录中的课程号
+                currentApplication.CID = nextCourseId.ToString();
+                
+                // 获取当前用户（管理员）
+                string currentUser = string.Empty;
+                try
+                {
+                    currentUser = await JS.InvokeAsync<string>("localStorage.getItem", "currentUser") ?? string.Empty;
+                }
+                catch { /* 如果获取失败就使用空字符串 */ }
+                
+                // 创建新课程，使用与管理员课程创建相同的逻辑
+                var newCourse = new Course
+                {
+                    CID = nextCourseId,
+                    Name = currentApplication.Name,
+                    Credits = currentApplication.Credits,
+                    Description = currentApplication.Description,
+                    TeacherId = currentApplication.TeacherId,
+                    CourseStatus = CourseStatus.未开课,
+                    CreateUser = !string.IsNullOrEmpty(currentUser) ? currentUser : "System",
+                    UpdateUser = !string.IsNullOrEmpty(currentUser) ? currentUser : "System",
+                    CreateDate = DateTime.UtcNow,
+                    UpdateDate = DateTime.UtcNow
+                };
+
+                DB.SMS_Courses.Add(newCourse);
+            }
+
+            await DB.SaveChangesAsync();
+
+            string message = isApproving ? "申请已通过，课程已创建/分配教师" : "申请已拒绝";
+            await JS.InvokeVoidAsync("alert", message);
+            
+            CloseApprovalModal();
+            await LoadApplications();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"审批操作异常: {ex.Message}");
+            await JS.InvokeVoidAsync("alert", "审批操作失败: " + ex.Message);
+        }
+        finally
+        {
+            isSubmitting = false;
         }
     }
 }

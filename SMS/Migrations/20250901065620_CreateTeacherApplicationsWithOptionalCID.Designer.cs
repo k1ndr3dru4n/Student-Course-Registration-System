@@ -12,8 +12,8 @@ using SMS;
 namespace SMS.Migrations
 {
     [DbContext(typeof(CimContext))]
-    [Migration("20250828052154_AddUsernameToStudentAndTeacher")]
-    partial class AddUsernameToStudentAndTeacher
+    [Migration("20250901065620_CreateTeacherApplicationsWithOptionalCID")]
+    partial class CreateTeacherApplicationsWithOptionalCID
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -206,6 +206,53 @@ namespace SMS.Migrations
                     b.ToTable("SMS_Teachers");
                 });
 
+            modelBuilder.Entity("SMS.Models.TeacherApplication", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminComment")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CID")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Credits")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TeacherId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdateDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeacherId");
+
+                    b.ToTable("SMS_TeacherApplications");
+                });
+
             modelBuilder.Entity("SMS.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -287,6 +334,17 @@ namespace SMS.Migrations
                     b.Navigation("Course");
 
                     b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("SMS.Models.TeacherApplication", b =>
+                {
+                    b.HasOne("SMS.Models.Teacher", "Teacher")
+                        .WithMany()
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Teacher");
                 });
 
             modelBuilder.Entity("SMS.Models.User", b =>

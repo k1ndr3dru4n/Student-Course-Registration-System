@@ -1,3 +1,4 @@
+@page "/admin-courses/edit/{id:int}"
 @page "/admin-courses/edit"
 @inject SMS.CimContext DB
 @using SMS.Models
@@ -7,10 +8,6 @@
 
 <PageTitle>Edit</PageTitle>
 
-<h1>Edit</h1>
-
-<h4>编辑课程</h4>
-<AntDesign.Divider />
 @if (Course is null)
 {
     <p><em>Loading...</em></p>
@@ -72,10 +69,6 @@ else
     </AntDesign.Row>
 }
 
-<div style="margin-top: 16px;">
-                <AntDesign.Button OnClick="@(() => NavigationManager.NavigateTo("/admin-courses"))">返回列表</AntDesign.Button>
-</div>
-
 @code {
     [Inject]
     public IJSRuntime JSRuntime { get; set; } = default!;
@@ -83,6 +76,7 @@ else
     private bool hasRendered = false;
     private bool isSubmitting = false;
 
+    [Parameter]
     [SupplyParameterFromQuery]
     public int Id { get; set; }
 

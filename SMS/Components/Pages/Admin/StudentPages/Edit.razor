@@ -1,3 +1,4 @@
+@page "/admin-students/edit/{id:int}"
 @page "/admin-students/edit"
 @inject SMS.CimContext DB
 @using SMS.Models
@@ -7,10 +8,6 @@
 
 <PageTitle>Edit</PageTitle>
 
-<h1>Edit</h1>
-
-<h4>Student</h4>
-<hr />
 @if (Student is null)
 {
     <p><em>Loading...</em></p>
@@ -68,10 +65,6 @@ else
     </AntDesign.Row>
 }
 
-<div>
-    <a href="/admin-students">Back to List</a>
-</div>
-
 @code {
     [Inject]
     public IJSRuntime JSRuntime { get; set; } = default!;
@@ -79,6 +72,7 @@ else
     private bool hasRendered = false;
     private bool isSubmitting = false;
 
+    [Parameter]
     [SupplyParameterFromQuery]
     public int Id { get; set; }
 

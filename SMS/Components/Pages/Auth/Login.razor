@@ -9,7 +9,16 @@
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
 
-<div style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; padding: 20px;">
+<style>
+    body, html {
+        overflow: hidden !important;
+        height: 100vh !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+</style>
+
+<div style="height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; padding: 20px; overflow: hidden;">
     <AntDesign.Row style="width: 100%; max-width: 400px;">
         <AntDesign.Col Span="24">
             <AntDesign.Card style="border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); border: none;">

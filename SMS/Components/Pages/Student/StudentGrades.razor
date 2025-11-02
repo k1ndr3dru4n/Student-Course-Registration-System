@@ -135,10 +135,15 @@
             currentUser = await JS.InvokeAsync<string>("localStorage.getItem", "currentUser");
             if (!string.IsNullOrEmpty(currentUser))
             {
-                currentStudent = await DB.SMS_Students.FirstOrDefaultAsync(s => s.Username != null && s.Username == currentUser);
-                if (currentStudent != null)
+                // 先通过用户名查找用户，再通过StudentId查找学生
+                var user = await DB.SMS_Users.FirstOrDefaultAsync(u => u.Username == currentUser && u.Role == UserRole.学生);
+                if (user?.StudentId.HasValue == true)
                 {
-                    selectedStudentSID = currentStudent.SID;
+                    currentStudent = await DB.SMS_Students.FindAsync(user.StudentId.Value);
+                    if (currentStudent != null)
+                    {
+                        selectedStudentSID = currentStudent.SID;
+                    }
                 }
             }
             students = currentStudent != null ? new List<Student> { currentStudent } : new List<Student>();
@@ -151,9 +156,11 @@
 
     private async Task LoadStudentGrades()
     {
-        studentEnrollments = (await DB.SMS_Enrollments.Include(e => e.Course).ThenInclude(c => c.Teacher)
-            .Where(e => e != null && e.StudentSID == selectedStudentSID && e.Course != null && e.Course.Teacher != null)
-            .ToListAsync()) ?? new List<Enrollment>();
+        studentEnrollments = await DB.SMS_Enrollments
+            .Include(e => e.Course)
+            .ThenInclude(c => c!.Teacher)
+            .Where(e => e.StudentSID == selectedStudentSID)
+            .ToListAsync() ?? new List<Enrollment>();
         StateHasChanged();
     }
 

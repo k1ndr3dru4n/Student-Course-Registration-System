@@ -15,6 +15,7 @@ namespace SMS
         public DbSet<User> SMS_Users { get; set; }
         public DbSet<Course> SMS_Courses { get; set; }
         public DbSet<Enrollment> SMS_Enrollments { get; set; }
+        public DbSet<TeacherApplication> SMS_TeacherApplications { get; set; } // 新增
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -54,23 +55,35 @@ namespace SMS
                 .HasPrincipalKey(t => t.Id)
                 .IsRequired(false);
 
+            // 配置TeacherApplication的外键关系 - 新增
+            modelBuilder.Entity<TeacherApplication>()
+                .HasOne(ta => ta.Teacher)
+                .WithMany()
+                .HasForeignKey(ta => ta.TeacherId)
+                .HasPrincipalKey(t => t.Id)
+                .IsRequired();
+
             base.OnModelCreating(modelBuilder);
         }
 
         public override int SaveChanges()
         {
             var entries = ChangeTracker.Entries()
-                .Where(e => e.Entity is Student || e.Entity is Teacher || e.Entity is User || e.Entity is Course || e.Entity is Enrollment);
+                .Where(e => e.Entity is Student || e.Entity is Teacher || e.Entity is User || e.Entity is Course || e.Entity is Enrollment || e.Entity is TeacherApplication); // 新增 TeacherApplication
             foreach (var entry in entries)
             {
                 if (entry.State == EntityState.Added)
                 {
-                    entry.Property("CreateDate").CurrentValue = DateTime.UtcNow;
-                    entry.Property("UpdateDate").CurrentValue = DateTime.UtcNow;
+                    // 使用北京时间（UTC+8）
+                    var beijingTime = DateTime.UtcNow.AddHours(8);
+                    entry.Property("CreateDate").CurrentValue = beijingTime;
+                    entry.Property("UpdateDate").CurrentValue = beijingTime;
                 }
                 else if (entry.State == EntityState.Modified)
                 {
-                    entry.Property("UpdateDate").CurrentValue = DateTime.UtcNow;
+                    // 使用北京时间（UTC+8）
+                    var beijingTime = DateTime.UtcNow.AddHours(8);
+                    entry.Property("UpdateDate").CurrentValue = beijingTime;
                 }
             }
             return base.SaveChanges();
@@ -79,17 +92,21 @@ namespace SMS
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             var entries = ChangeTracker.Entries()
-                .Where(e => e.Entity is Student || e.Entity is Teacher || e.Entity is User || e.Entity is Course || e.Entity is Enrollment);
+                .Where(e => e.Entity is Student || e.Entity is Teacher || e.Entity is User || e.Entity is Course || e.Entity is Enrollment || e.Entity is TeacherApplication); // 新增 TeacherApplication
             foreach (var entry in entries)
             {
                 if (entry.State == EntityState.Added)
                 {
-                    entry.Property("CreateDate").CurrentValue = DateTime.UtcNow;
-                    entry.Property("UpdateDate").CurrentValue = DateTime.UtcNow;
+                    // 使用北京时间（UTC+8）
+                    var beijingTime = DateTime.UtcNow.AddHours(8);
+                    entry.Property("CreateDate").CurrentValue = beijingTime;
+                    entry.Property("UpdateDate").CurrentValue = beijingTime;
                 }
                 else if (entry.State == EntityState.Modified)
                 {
-                    entry.Property("UpdateDate").CurrentValue = DateTime.UtcNow;
+                    // 使用北京时间（UTC+8）
+                    var beijingTime = DateTime.UtcNow.AddHours(8);
+                    entry.Property("UpdateDate").CurrentValue = beijingTime;
                 }
             }
             return await base.SaveChangesAsync(cancellationToken);

@@ -9034,11 +9034,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\SMS.csproj",
+      "projectUniqueName": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.7\\SMS\\SMS.csproj",
       "projectName": "SMS",
-      "projectPath": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\SMS.csproj",
+      "projectPath": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.7\\SMS\\SMS.csproj",
       "packagesPath": "C:\\Users\\ZH202508001\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\obj\\",
+      "outputPath": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.7\\SMS\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\ZH202508001\\AppData\\Roaming\\NuGet\\NuGet.Config"

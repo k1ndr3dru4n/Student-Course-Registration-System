@@ -1,4 +1,4 @@
-@page "/admin-students/details"
+@page "/admin-students/details/{id:int}"
 @inject SMS.CimContext DB
 @using SMS.Models
 @inject NavigationManager NavigationManager
@@ -6,12 +6,7 @@
 
 <PageTitle>Details</PageTitle>
 
-<h1>Details</h1>
-
-<div>
-    <h4>Student</h4>
-    <hr />
-    @if (student is null)
+@if (student is null)
     {
         <p><em>Loading...</em></p>
     }
@@ -30,13 +25,11 @@
             </div>
         </div>
     }
-</div>
 
 @code {
     Student? student;
 
     [Parameter]
-    [SupplyParameterFromQuery]
     public int Id { get; set; }
 
     protected override async Task OnInitializedAsync()

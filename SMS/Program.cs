@@ -20,7 +20,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.WriteIndented = true;
 });
 
-// 配置HTTPS
+// 配置HTTPS 运行项目时应该注释掉
 builder.Services.AddHttpsRedirection(options =>
 {
     options.HttpsPort = 7286; // 指定HTTPS端口
@@ -33,6 +33,13 @@ builder.Services.AddDbContextFactory<CimContext>(options =>
 builder.Services.AddQuickGridEntityFrameworkAdapter();
 
 var app = builder.Build();
+
+// 确保数据库是最新的
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<CimContext>();
+    context.Database.EnsureCreated(); // 这将创建数据库和所有表（如果它们不存在）
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

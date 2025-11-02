@@ -8,267 +8,438 @@
 
 <PageTitle>教师选课管理 - 教师端</PageTitle>
 
-<div style="padding: 24px; max-width: 1100px; margin: auto;">
-    <h2 style="margin-bottom: 8px; color: #1f2937; font-weight: 600;">可申请课程</h2>
-    <p style="color: #6b7280; margin-bottom: 24px;">查看并申请您可负责的课程。</p>
-
-    <!-- 搜索框 -->
-    <div style="margin-bottom: 16px; display: flex; gap: 12px; align-items: center;">
-        <input type="text"
-               @bind="courseSearchText"
-               placeholder="搜索课程名称、课程号、教师等..."
-               style="flex: 1; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px;" />
-        <button @onclick="SearchCourses"
-                style="padding: 8px 16px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">
-            搜索
-        </button>
-        <button @onclick="ClearCourseSearch"
-                style="padding: 8px 16px; background: #f5f5f5; color: #666; border: 1px solid #d9d9d9; border-radius: 4px; cursor: pointer;">
-            清除
-        </button>
-    </div>
-
-    @if (isLoading)
+<div style="padding: 24px; max-width: 1200px; margin: auto;">
+    
+    @if (currentUser == null)
     {
-        <div style="text-align: center; padding: 40px; color: #666;">
-            正在加载课程数据...
-        </div>
-    }
-    else if (availableCourses == null || !availableCourses.Any())
-    {
-        <div style="text-align: center; padding: 40px; color: #666;">
-            暂无可申请课程
-        </div>
+        <div style="text-align:center; color:#888; padding:32px;">正在加载教师信息...</div>
     }
     else
     {
-        <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
-            <thead>
-                <tr style="background: #fafafa;">
-                    <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: left;">
-                        <div style="display: flex; align-items: center;">
-                            <span>课程名称</span>
-                            <span style="margin-left: 8px; flex-direction: column;">
-                                <span style="cursor: pointer; color: @(sortField=="Name"&&sortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourses("Name", true)'>▲</span>
-                                <span style="cursor: pointer; color: @(sortField=="Name"&&!sortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourses("Name", false)'>▼</span>
-                            </span>
-                        </div>
-                    </th>
-                    <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">
-                        <div style="display: flex; align-items: center; justify-content: center;">
-                            <span>课程号</span>
-                            <span style="margin-left: 8px; flex-direction: column;">
-                                <span style="cursor: pointer; color: @(sortField=="CID"&&sortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourses("CID", true)'>▲</span>
-                                <span style="cursor: pointer; color: @(sortField=="CID"&&!sortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourses("CID", false)'>▼</span>
-                            </span>
-                        </div>
-                    </th>
-                    <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">
-                        <div style="display: flex; align-items: center; justify-content: center;">
-                            <span>学分</span>
-                            <span style="margin-left: 8px; flex-direction: column;">
-                                <span style="cursor: pointer; color: @(sortField=="Credits"&&sortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourses("Credits", true)'>▲</span>
-                                <span style="cursor: pointer; color: @(sortField=="Credits"&&!sortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourses("Credits", false)'>▼</span>
-                            </span>
-                        </div>
-                    </th>
-                    <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">
-                        <div style="display: flex; align-items: center; justify-content: center;">
-                            <span>课程状态</span>
-                            <span style="margin-left: 8px; flex-direction: column;">
-                                <span style="cursor: pointer; color: @(sortField=="CourseStatus"&&sortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourses("CourseStatus", true)'>▲</span>
-                                <span style="cursor: pointer; color: @(sortField=="CourseStatus"&&!sortAsc?"#1890ff":"#ccc");" @onclick='() => SortCourses("CourseStatus", false)'>▼</span>
-                            </span>
-                        </div>
-                    </th>
-                    <th style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var course in GetSortedCourses())
-                {
-                    <tr>
-                        <td style="padding: 12px; border: 1px solid #f0f0f0;">@course.Name</td>
-                        <td style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">@course.CID</td>
-                        <td style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">@course.Credits</td>
-                        <td style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">
-                            @switch (course.CourseStatus)
+        <!-- 新增申请课程按钮 -->
+        <div style="margin-bottom: 16px;">
+            <AntDesign.Button Type="@AntDesign.ButtonType.Primary" Icon="@IconType.Outline.Plus" @onclick="ShowCreateModal">
+                申请新课程
+            </AntDesign.Button>
+        </div>
+
+        <!-- 可申请课程表格 -->
+        <AntDesign.Card Title="可申请课程" style="margin-bottom: 24px;">
+            @if (courses == null)
+            {
+                <div style="text-align:center; color:#888; padding:32px;">正在加载课程信息...</div>
+            }
+            else if (!courses.Any())
+            {
+                <div style="text-align:center; color:#888; padding:32px;">暂无可申请的课程</div>
+            }
+            else
+            {
+                <div style="overflow-x: auto;">
+                    <table class="ant-table-tbody" style="width: 100%; border-collapse: collapse;">
+                        <thead style="background-color: #fafafa;">
+                            <tr>
+                                <th style="padding: 16px; border: 1px solid #f0f0f0; text-align: left; font-weight: 500;">课程名称</th>
+                                <th style="padding: 16px; border: 1px solid #f0f0f0; text-align: left; font-weight: 500;">课程号</th>
+                                <th style="padding: 16px; border: 1px solid #f0f0f0; text-align: left; font-weight: 500;">学分</th>
+                                <th style="padding: 16px; border: 1px solid #f0f0f0; text-align: left; font-weight: 500;">授课教师</th>
+                                <th style="padding: 16px; border: 1px solid #f0f0f0; text-align: left; font-weight: 500;">课程状态</th>
+                                <th style="padding: 16px; border: 1px solid #f0f0f0; text-align: center; font-weight: 500;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var course in courses)
                             {
-                                case CourseStatus.未开课:
-                                    <span style="color: #faad14; font-weight: 500;">未开课</span>
-                                    break;
-                                case CourseStatus.正在进行:
-                                    <span style="color: #52c41a; font-weight: 500;">正在进行</span>
-                                    break;
-                                case CourseStatus.已结束:
-                                    <span style="color: #8c8c8c; font-weight: 500;">已结束</span>
-                                    break;
+                                <tr style="border-bottom: 1px solid #f0f0f0;">
+                                    <td style="padding: 16px; border: 1px solid #f0f0f0;">@course.Name</td>
+                                    <td style="padding: 16px; border: 1px solid #f0f0f0;">@course.CID</td>
+                                    <td style="padding: 16px; border: 1px solid #f0f0f0;">@course.Credits</td>
+                                    <td style="padding: 16px; border: 1px solid #f0f0f0;">
+                                        @(course.Teacher?.Name ?? "待分配")
+                                    </td>
+                                    <td style="padding: 16px; border: 1px solid #f0f0f0;">
+                                        @if (course.CourseStatus == CourseStatus.未开课)
+                                        {
+                                            <AntDesign.Tag Color="@("orange")">未开课</AntDesign.Tag>
+                                        }
+                                        else if (course.CourseStatus == CourseStatus.正在进行)
+                                        {
+                                            <AntDesign.Tag Color="@("green")">正在进行</AntDesign.Tag>
+                                        }
+                                        else
+                                        {
+                                            <AntDesign.Tag Color="@("gray")">已结束</AntDesign.Tag>
+                                        }
+                                    </td>
+                                    <td style="padding: 16px; border: 1px solid #f0f0f0; text-align: center;">
+                                        @{
+                                            var pendingApplication = myApplications?.FirstOrDefault(a => a.CID == course.CID.ToString() && a.Status == ApplicationStatus.Pending);
+                                            var approvedApplication = myApplications?.FirstOrDefault(a => a.CID == course.CID.ToString() && a.Status == ApplicationStatus.Approved);
+                                        }
+                                        
+                                        @if (course.TeacherId != null)
+                                        {
+                                            <AntDesign.Button Disabled="true">
+                                                已有教师
+                                            </AntDesign.Button>
+                                        }
+                                        else if (approvedApplication != null)
+                                        {
+                                            <AntDesign.Button Disabled="true">
+                                                已申请
+                                            </AntDesign.Button>
+                                        }
+                                        else if (pendingApplication != null)
+                                        {
+                                            <AntDesign.Button Disabled="true">
+                                                已申请
+                                            </AntDesign.Button>
+                                        }
+                                        else
+                                        {
+                                            <AntDesign.Button Type="@AntDesign.ButtonType.Primary" @onclick="() => ApplyCourse(course)">
+                                                申请
+                                            </AntDesign.Button>
+                                        }
+                                    </td>
+                                </tr>
                             }
-                        </td>
-                        <td style="padding: 12px; border: 1px solid #f0f0f0; text-align: center;">
-                            @if (course.CourseStatus == CourseStatus.未开课 && course.TeacherId == null)
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </AntDesign.Card>
+
+        <!-- 我的申请记录表格 -->
+        <AntDesign.Card Title="我的申请记录">
+            @if (myApplications == null)
+            {
+                <div style="text-align:center; color:#888; padding:32px;">正在加载申请记录...</div>
+            }
+            else if (!myApplications.Any())
+            {
+                <div style="text-align:center; color:#888; padding:32px;">暂无申请记录</div>
+            }
+            else
+            {
+                <div style="overflow-x: auto;">
+                    <table class="ant-table-tbody" style="width: 100%; border-collapse: collapse;">
+                        <thead style="background-color: #fafafa;">
+                            <tr>
+                                <th style="padding: 16px; border: 1px solid #f0f0f0; text-align: left; font-weight: 500;">课程名称</th>
+                                <th style="padding: 16px; border: 1px solid #f0f0f0; text-align: left; font-weight: 500;">课程号</th>
+                                <th style="padding: 16px; border: 1px solid #f0f0f0; text-align: left; font-weight: 500;">学分</th>
+                                <th style="padding: 16px; border: 1px solid #f0f0f0; text-align: left; font-weight: 500;">申请状态</th>
+                                <th style="padding: 16px; border: 1px solid #f0f0f0; text-align: left; font-weight: 500;">申请时间</th>
+                                <th style="padding: 16px; border: 1px solid #f0f0f0; text-align: left; font-weight: 500;">管理员备注</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var application in myApplications)
                             {
-                                <button @onclick="() => ApplyCourse(course)"
-                                        style="padding: 6px 12px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                                    申请
-                                </button>
+                                <tr style="border-bottom: 1px solid #f0f0f0;">
+                                    <td style="padding: 16px; border: 1px solid #f0f0f0;">@application.Name</td>
+                                    <td style="padding: 16px; border: 1px solid #f0f0f0;">
+                                        @if (string.IsNullOrEmpty(application.CID))
+                                        {
+                                            <span style="color: #999; font-style: italic;">待分配</span>
+                                        }
+                                        else
+                                        {
+                                            @application.CID
+                                        }
+                                    </td>
+                                    <td style="padding: 16px; border: 1px solid #f0f0f0;">@application.Credits</td>
+                                    <td style="padding: 16px; border: 1px solid #f0f0f0;">
+                                        @switch (application.Status)
+                                        {
+                                            case ApplicationStatus.Pending:
+                                                <AntDesign.Tag Color="@("orange")">待审批</AntDesign.Tag>
+                                                break;
+                                            case ApplicationStatus.Approved:
+                                                <AntDesign.Tag Color="@("green")">已通过</AntDesign.Tag>
+                                                break;
+                                            case ApplicationStatus.Rejected:
+                                                <AntDesign.Tag Color="@("red")">已拒绝</AntDesign.Tag>
+                                                break;
+                                        }
+                                    </td>
+                                    <td style="padding: 16px; border: 1px solid #f0f0f0;">@application.CreateDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td style="padding: 16px; border: 1px solid #f0f0f0;">@(application.AdminComment ?? "-")</td>
+                                </tr>
                             }
-                            else if (course.TeacherId != null)
-                            {
-                                    <span style="color: #8c8c8c; font-weight: 500;">已被申请</span>
-                            }
-                            else
-                            {
-                                <span style="color: #8c8c8c; font-weight: 500;">不可申请</span>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </AntDesign.Card>
     }
 </div>
 
+<!-- 申请新课程模态框 -->
+<AntDesign.Modal Title="申请新课程" 
+                @bind-Visible="createModalVisible" 
+                Width="600"
+                OnCancel="CloseCreateModal"
+                Footer="null">
+    <AntDesign.Card>
+        <EditForm Model="@newApplication" OnValidSubmit="HandleCreateApplication" FormName="createApplicationForm">
+            <DataAnnotationsValidator />
+            
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 4px; font-weight: 500;">课程名称</label>
+                <AntDesign.Input @bind-Value="newApplication.Name" Placeholder="请输入课程名称" />
+                <ValidationMessage For="@(() => newApplication.Name)" style="color: red; font-size: 12px;" />
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 4px; font-weight: 500; color: #666;">课程号</label>
+                <div style="padding: 8px 12px; background-color: #f5f5f5; border: 1px solid #d9d9d9; border-radius: 4px; color: #666;">
+                    审批通过后自动分配
+                </div>
+                <div style="font-size: 12px; color: #999; margin-top: 4px;">
+                    系统将自动为您分配下一个可用的课程号
+                </div>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 4px; font-weight: 500;">学分</label>
+                <AntDesign.InputNumber @bind-Value="newApplication.Credits" Min="1" Max="10" Style="width: 100%;" />
+                <ValidationMessage For="@(() => newApplication.Credits)" style="color: red; font-size: 12px;" />
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 4px; font-weight: 500;">课程描述</label>
+                <AntDesign.TextArea @bind-Value="newApplication.Description" Placeholder="请输入课程描述（可选）" Rows="3" />
+            </div>
+
+            <div style="text-align: right;">
+                <AntDesign.Button @onclick="CloseCreateModal" style="margin-right: 8px;">
+                    取消
+                </AntDesign.Button>
+                <AntDesign.Button Type="@AntDesign.ButtonType.Primary" HtmlType="submit" Loading="isSubmitting">
+                    提交申请
+                </AntDesign.Button>
+            </div>
+        </EditForm>
+    </AntDesign.Card>
+</AntDesign.Modal>
+
 @code {
-    private bool isLoading = true;
-    private List<Course> availableCourses = new();
-    private string courseSearchText = string.Empty;
-    private string sortField = "Name";
-    private bool sortAsc = true;
-    private string currentUser = string.Empty;
-    private CimContext? DB;
+    private SMS.CimContext? DB;
+    private string? currentUser;
+    private Teacher? currentTeacher;
+    private List<Course> courses = new();
+    private List<TeacherApplication> myApplications = new();
+    
+    // 申请新课程相关变量
+    private bool createModalVisible = false;
+    private bool isSubmitting = false;
+    private TeacherApplication newApplication = new();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            DB = DbFactory.CreateDbContext();
-            currentUser = await GetCurrentUser();
-            Console.WriteLine($"[调试] 当前用户: {currentUser}");
-            await LoadAvailableCourses();
-            StateHasChanged();
-        }
-    }
-
-    private async Task<string> GetCurrentUser()
-    {
-    var user = await JS.InvokeAsync<string>("localStorage.getItem", "currentUser");
-        return user ?? string.Empty;
-    }
-
-    private async Task LoadAvailableCourses()
-    {
-        isLoading = true;
-        StateHasChanged();
-        if (DB == null)
-        {
-            availableCourses = new();
-            isLoading = false;
-            return;
-        }
-    availableCourses = await DB.SMS_Courses.Where(c => c.TeacherId == null).ToListAsync();
-        isLoading = false;
-        StateHasChanged();
-    }
-
-    private async Task SearchCourses()
-    {
-        if (string.IsNullOrWhiteSpace(courseSearchText))
-        {
-            await LoadAvailableCourses();
-        }
-        else
-        {
-            if (DB == null)
+            try 
             {
-                availableCourses = new();
-                return;
+                DB = DbFactory.CreateDbContext();
+                
+                // 获取当前登录用户名
+                for (int i = 0; i < 3; i++)
+                {
+                    try
+                    {
+                        currentUser = await JS.InvokeAsync<string>("localStorage.getItem", "currentUser");
+                        break;
+                    }
+                    catch
+                    {
+                        if (i < 2) await Task.Delay(100);
+                        else throw;
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(currentUser))
+                {
+                    // 通过用户名查找教师
+                    var user = await DB.SMS_Users.FirstOrDefaultAsync(u => u.Username == currentUser);
+                    if (user?.TeacherId.HasValue == true)
+                    {
+                        currentTeacher = await DB.SMS_Teachers.FindAsync(user.TeacherId.Value);
+                        if (currentTeacher != null)
+                        {
+                            await LoadData();
+                        }
+                    }
+                }
+                
+                StateHasChanged();
             }
-            availableCourses = await DB.SMS_Courses.Where(c => c != null && c.TeacherId == null && (c.Name != null && c.Name.Contains(courseSearchText) || c.CID.ToString().Contains(courseSearchText))).ToListAsync();
-        if (availableCourses == null)
-            availableCourses = new();
+            catch (Exception ex)
+            {
+                Console.WriteLine($"加载数据时发生异常: {ex.Message}");
+                await JS.InvokeVoidAsync("alert", "加载失败: " + ex.Message);
+            }
         }
-        StateHasChanged();
     }
 
-    private async Task ClearCourseSearch()
+    private async Task LoadData()
     {
-        courseSearchText = string.Empty;
-        await LoadAvailableCourses();
-    }
-
-    private void SortCourses(string field, bool asc)
-    {
-        sortField = field;
-        sortAsc = asc;
-        StateHasChanged();
-    }
-
-    private IEnumerable<Course> GetSortedCourses()
-    {
-        IEnumerable<Course> query = availableCourses;
-        switch (sortField)
+        try
         {
-            case "Name":
-                query = sortAsc ? query.OrderBy(c => c.Name) : query.OrderByDescending(c => c.Name);
-                break;
-            case "CID":
-                query = sortAsc ? query.OrderBy(c => c.CID) : query.OrderByDescending(c => c.CID);
-                break;
-            case "Credits":
-                query = sortAsc ? query.OrderBy(c => c.Credits) : query.OrderByDescending(c => c.Credits);
-                break;
-            case "CourseStatus":
-                query = sortAsc ? query.OrderBy(c => c.CourseStatus) : query.OrderByDescending(c => c.CourseStatus);
-                break;
+            if (DB != null && currentTeacher != null)
+            {
+                // 获取已通过申请的课程ID列表
+                var approvedCourseIds = await DB.SMS_TeacherApplications
+                    .Where(ta => ta.Status == ApplicationStatus.Approved && !string.IsNullOrEmpty(ta.CID))
+                    .Select(ta => ta.CID)
+                    .ToListAsync();
+
+                // 加载可申请课程（没有分配教师且没有已通过申请的课程）
+                courses = await DB.SMS_Courses
+                    .Include(c => c.Teacher)
+                    .Where(c => c.TeacherId == null && !approvedCourseIds.Contains(c.CID.ToString()))
+                    .ToListAsync();
+
+                // 加载我的申请记录
+                myApplications = await DB.SMS_TeacherApplications
+                    .Where(ta => ta.TeacherId == currentTeacher.Id)
+                    .OrderByDescending(ta => ta.CreateDate)
+                    .ToListAsync();
+            }
         }
-        return query;
+        catch (Exception ex)
+        {
+            Console.WriteLine($"加载数据异常: {ex.Message}");
+            await JS.InvokeVoidAsync("alert", "加载数据失败: " + ex.Message);
+        }
     }
 
     private async Task ApplyCourse(Course course)
     {
         try
         {
-            if (DB == null || string.IsNullOrEmpty(currentUser))
+            if (DB == null || currentTeacher == null)
             {
-                await JS.InvokeVoidAsync("alert", "当前用户信息获取失败，无法申请课程。");
-                Console.WriteLine("[ApplyCourse] DB或currentUser为空");
+                await JS.InvokeVoidAsync("alert", "用户信息获取失败，请重新登录");
                 return;
             }
-            // 重新查询course实体，确保为最新
-            var dbCourse = await DB.SMS_Courses.FirstOrDefaultAsync(c => c.CID == course.CID);
-            if (dbCourse == null)
+
+            // 检查课程是否已经被分配给教师
+            if (course.TeacherId != null)
             {
-                await JS.InvokeVoidAsync("alert", "未找到课程实体，无法申请。");
-                Console.WriteLine("[ApplyCourse] 未找到课程实体");
+                await JS.InvokeVoidAsync("alert", "该课程已经有授课教师了");
                 return;
             }
-            // 先通过用户名查找User记录，然后通过TeacherId关联到Teacher表
-            var user = await DB.SMS_Users.FirstOrDefaultAsync(u => u.Username == currentUser);
-            if (user == null || user.TeacherId == null)
+
+            // 检查是否已经有任何教师申请并通过了该课程
+            var anyApprovedApplication = await DB.SMS_TeacherApplications
+                .FirstOrDefaultAsync(ta => ta.CID == course.CID.ToString() && ta.Status == ApplicationStatus.Approved);
+
+            if (anyApprovedApplication != null)
             {
-                await JS.InvokeVoidAsync("alert", "未找到教师信息，无法申请课程。");
-                Console.WriteLine("[ApplyCourse] 未找到User或TeacherId");
+                await JS.InvokeVoidAsync("alert", "该课程已经被其他教师申请并通过了");
                 return;
             }
-            var teacher = await DB.SMS_Teachers.FirstOrDefaultAsync(t => t.Id == user.TeacherId);
-            if (teacher == null)
+
+            // 检查当前用户是否已经申请过该课程
+            var existingApplication = await DB.SMS_TeacherApplications
+                .FirstOrDefaultAsync(ta => ta.CID == course.CID.ToString() && ta.TeacherId == currentTeacher.Id);
+
+            if (existingApplication != null)
             {
-                await JS.InvokeVoidAsync("alert", "未找到教师详细信息，无法申请课程。");
-                Console.WriteLine("[ApplyCourse] 未找到Teacher");
+                if (existingApplication.Status == ApplicationStatus.Pending)
+                {
+                    await JS.InvokeVoidAsync("alert", "您已经申请过该课程了，请等待审批结果");
+                }
+                else if (existingApplication.Status == ApplicationStatus.Approved)
+                {
+                    await JS.InvokeVoidAsync("alert", "您已经申请过该课程并已通过审批");
+                }
+                else if (existingApplication.Status == ApplicationStatus.Rejected)
+                {
+                    await JS.InvokeVoidAsync("alert", "您之前申请该课程被拒绝了");
+                }
                 return;
             }
-            dbCourse.TeacherId = teacher.TID;
-            DB.SMS_Courses.Update(dbCourse);
+
+            // 创建申请记录
+            var application = new TeacherApplication
+            {
+                Name = course.Name ?? "",
+                CID = course.CID.ToString(),
+                Credits = course.Credits,
+                Description = course.Description ?? "",
+                TeacherId = currentTeacher.Id,
+                Status = ApplicationStatus.Pending
+            };
+
+            DB.SMS_TeacherApplications.Add(application);
             await DB.SaveChangesAsync();
-            await JS.InvokeVoidAsync("alert", "申请成功！");
-            await LoadAvailableCourses();
+
+            await JS.InvokeVoidAsync("alert", "申请成功，等待管理员审批");
+            await LoadData();
+            StateHasChanged();
         }
         catch (Exception ex)
         {
-            var innerMsg = ex.InnerException?.Message ?? "无更多详细信息";
-            await JS.InvokeVoidAsync("alert", $"申请失败: {ex.Message}\n详细: {innerMsg}");
-            Console.WriteLine($"[ApplyCourse] 异常: {ex.Message}\n{innerMsg}\n{ex.StackTrace}");
+            Console.WriteLine($"申请失败: {ex.Message}");
+            await JS.InvokeVoidAsync("alert", "申请失败: " + ex.Message);
         }
+    }
+
+    private void ShowCreateModal()
+    {
+        newApplication = new TeacherApplication();
+        createModalVisible = true;
+    }
+
+    private void CloseCreateModal()
+    {
+        createModalVisible = false;
+        newApplication = new TeacherApplication();
+    }
+
+    private async Task HandleCreateApplication()
+    {
+        try
+        {
+            if (DB == null || currentTeacher == null)
+            {
+                await JS.InvokeVoidAsync("alert", "用户信息获取失败，请重新登录");
+                return;
+            }
+
+            isSubmitting = true;
+
+            // 设置教师ID和状态，课程号设为空，由管理员审批时自动分配
+            newApplication.TeacherId = currentTeacher.Id;
+            newApplication.Status = ApplicationStatus.Pending;
+            newApplication.CID = ""; // 置空，审批时自动分配
+
+            DB.SMS_TeacherApplications.Add(newApplication);
+            await DB.SaveChangesAsync();
+
+            await JS.InvokeVoidAsync("alert", "申请提交成功，等待管理员审批");
+            
+            CloseCreateModal();
+            await LoadData();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"提交申请异常: {ex.Message}");
+            await JS.InvokeVoidAsync("alert", "提交申请失败: " + ex.Message);
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        DB?.Dispose();
     }
 }

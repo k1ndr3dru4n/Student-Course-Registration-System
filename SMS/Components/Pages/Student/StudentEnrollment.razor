@@ -165,10 +165,15 @@
             currentUser = await JS.InvokeAsync<string>("localStorage.getItem", "currentUser");
             if (!string.IsNullOrEmpty(currentUser))
             {
-                currentStudent = await DB.SMS_Students.FirstOrDefaultAsync(s => s.Username != null && s.Username == currentUser);
-                if (currentStudent != null)
+                // 先通过用户名查找用户，再通过StudentId查找学生
+                var user = await DB.SMS_Users.FirstOrDefaultAsync(u => u.Username == currentUser && u.Role == UserRole.学生);
+                if (user?.StudentId.HasValue == true)
                 {
-                    selectedStudentSID = currentStudent.SID;
+                    currentStudent = await DB.SMS_Students.FindAsync(user.StudentId.Value);
+                    if (currentStudent != null)
+                    {
+                        selectedStudentSID = currentStudent.SID;
+                    }
                 }
             }
             students = currentStudent != null ? new List<Student> { currentStudent } : new List<Student>();
@@ -251,8 +256,13 @@
             await JS.InvokeVoidAsync("alert", "您已经选择了这门课程");
             return;
         }
+
+        // 获取下一个可用的EID值
+        var maxEID = await DB.SMS_Enrollments.MaxAsync(e => (int?)e.EID) ?? 0;
+        
         var enrollment = new Enrollment
         {
+            EID = maxEID + 1,
             StudentSID = selectedStudentSID,
             CourseCID = courseCID,
             Status = "Active",
