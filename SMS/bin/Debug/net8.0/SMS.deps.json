@@ -22,6 +22,14 @@
         },
         "runtime": {
           "SMS.dll": {}
+        },
+        "resources": {
+          "en-US/SMS.resources.dll": {
+            "locale": "en-US"
+          },
+          "zh-CN/SMS.resources.dll": {
+            "locale": "zh-CN"
+          }
         }
       },
       "AntDesign/1.4.3": {

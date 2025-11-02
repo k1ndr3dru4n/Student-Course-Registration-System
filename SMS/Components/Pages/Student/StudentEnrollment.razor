@@ -5,17 +5,18 @@
 @inject SMS.CimContext DB
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
+@inject IStringLocalizer<SharedResources> Localizer
 @rendermode InteractiveServer
 
-<PageTitle>学生选课 - 学生端</PageTitle>
+<PageTitle>@Localizer["StudentEnrollment"] - @Localizer["Student"]</PageTitle>
 
 <div style="padding: 24px; max-width: 1000px; margin: auto;">
-    <h2 style="margin-bottom: 8px; color: #1f2937; font-weight: 600;">学生选课</h2>
+    <h2 style="margin-bottom: 8px; color: #1f2937; font-weight: 600;">@Localizer["StudentEnrollment"]</h2>
     <p style="color: #6b7280; margin-bottom: 24px;">请选择学生并进行选课操作</p>
 
     @if (currentStudent == null)
     {
-        <div style="text-align:center; color:#888; padding:32px;">正在加载学生信息...</div>
+        <div style="text-align:center; color:#888; padding:32px;">@Localizer["Loading"]</div>
     }
     else
     {

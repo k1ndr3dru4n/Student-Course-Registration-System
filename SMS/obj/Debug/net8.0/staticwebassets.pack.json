@@ -1,19 +1,23 @@
 {
   "Files": [
     {
-      "Id": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.7\\SMS\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\SMS.bundle.scp.css",
+      "Id": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\SMS.bundle.scp.css",
       "PackagePath": "staticwebassets\\SMS.bundle.scp.css"
     },
     {
-      "Id": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.7\\SMS\\wwwroot\\app.css",
+      "Id": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\wwwroot\\app.css",
       "PackagePath": "staticwebassets\\app.css"
     },
     {
-      "Id": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.7\\SMS\\wwwroot\\favicon.png",
+      "Id": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\wwwroot\\favicon.png",
       "PackagePath": "staticwebassets\\favicon.png"
     },
     {
-      "Id": "C:\\Users\\ZH202508001\\Desktop\\Student Management System1.7\\SMS\\wwwroot\\quickgrid-custom.css",
+      "Id": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\wwwroot\\js\\localization.js",
+      "PackagePath": "staticwebassets\\js\\localization.js"
+    },
+    {
+      "Id": "C:\\Users\\ZH202508001\\Desktop\\Student Management System\\SMS\\wwwroot\\quickgrid-custom.css",
       "PackagePath": "staticwebassets\\quickgrid-custom.css"
     },
     {
