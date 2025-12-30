@@ -1,2 +1,2 @@
-# SMS
-Welcome to the student management system (SMS) platform.   This platform is designed to help you manage student information efficiently and effectively.
+# Student-Course-Registration-System
+The Student Course Registration System is a web-based platform designed for university students to browse, select, and enroll in courses efficiently and securely.
